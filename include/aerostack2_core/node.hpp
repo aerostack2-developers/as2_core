@@ -17,7 +17,7 @@ namespace aerostack2
 class Node : public rclcpp::Node
 {
 public:
-  Node(char * name) : rclcpp::Node(name){};
+  Node(const std::string& name) : rclcpp::Node(name){};
   std::string get_drone_id(){return "drone0";};
 };
 }  // namespace aerostack2

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "node.hpp"
+#include "aerial_platform.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
@@ -17,10 +18,13 @@
 
 namespace aerostack2
 {
-template <class T> class Sensor
+
+template <typename T>
+class Sensor
 {
 public:
-  Sensor(const std::string& id, const std::shared_ptr<aerostack2::Node>& node_ptr)
+  //Sensor(){};
+  Sensor(const std::string& id,  aerostack2::Node* node_ptr)
     :sensor_id_(id), node_ptr_(node_ptr)
     {
       std::string topic_name = node_ptr_->get_drone_id() + "/" + node_ptr->get_name() + "/" + sensor_id_;
@@ -40,6 +44,7 @@ public:
   void registerSensor(){};
 
   bool new_measure_ = false;
+  
   void addMeasure(const T& measurement){
     this->msg_data_ = measurement;
     new_measure_ = true;
@@ -54,7 +59,7 @@ public:
 
 
 private:
-  std::shared_ptr<aerostack2::Node> node_ptr_;
+  aerostack2::Node* node_ptr_ = nullptr;
   
   typename rclcpp::Publisher<T>::SharedPtr sensor_publisher_;
   

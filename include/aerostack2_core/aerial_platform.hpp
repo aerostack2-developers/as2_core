@@ -9,7 +9,6 @@
 #include <string>
 
 #include "node.hpp"
-#include "sensor.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
@@ -23,7 +22,7 @@ namespace aerostack2
 class AerialPlatform : public aerostack2::Node
 {
 public:
-  AerialPlatform(char * name);
+  AerialPlatform(const std::string& name);
   
   virtual bool ownConfigureSensors()= 0;
   virtual bool ownReadSensors()= 0;

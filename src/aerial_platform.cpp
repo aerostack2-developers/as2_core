@@ -4,7 +4,7 @@
 
 namespace aerostack2{
 
-AerialPlatform::AerialPlatform(char* name)
+AerialPlatform::AerialPlatform(const std::string& name)
     : aerostack2::Node(name)
   {
     
