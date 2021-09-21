@@ -19,19 +19,23 @@
 namespace aerostack2
 {
 
-template <typename T>
-class Sensor
+class GenericSensor
 {
 public:
-  //Sensor(){};
-  Sensor(const std::string& id,  aerostack2::Node* node_ptr)
+  GenericSensor(const std::string& id,  aerostack2::Node* node_ptr)
     :sensor_id_(id), node_ptr_(node_ptr)
     {
-      std::string topic_name = node_ptr_->get_drone_id() + "/" + node_ptr->get_name() + "/" + sensor_id_;
-      sensor_publisher_ = node_ptr_->create_publisher<T>(topic_name, 10);
+      topic_name_ = node_ptr_->get_drone_id() + "/" + node_ptr->get_name() + "/" + sensor_id_;
     }
   
-  // TODO TFs management
+protected:
+  std::string topic_name_;
+  aerostack2::Node* node_ptr_ = nullptr;
+
+private:
+  std::string sensor_id_;  
+
+  // TODO: TFs management
   void setStaticTransform(const std::string& frame_id,
                           const std::string& parent_frame_id,
                           const float& x,
@@ -41,29 +45,28 @@ public:
                           const float& pitch,
                           const float& yaw){};
   
+  // TODO: Implement this
   void registerSensor(){};
 
-  bool new_measure_ = false;
-  
-  void addMeasure(const T& measurement){
-    this->msg_data_ = measurement;
-    new_measure_ = true;
-  };
+}; //class Sensor
 
-  void publishData(){
-    if (new_measure_){
-      this->sensor_publisher_->publish(msg_data_);
-      new_measure_ = false;
+
+template <typename T>
+class Sensor: public GenericSensor
+{
+public:
+  Sensor(const std::string& id,  aerostack2::Node* node_ptr)
+    :GenericSensor(id,node_ptr)
+    {
+      sensor_publisher_ = node_ptr_->create_publisher<T>(this->topic_name_, 10);
     }
+  
+  void publishData(const T& msg){    
+    this->sensor_publisher_->publish(msg);
   }
 
-
 private:
-  aerostack2::Node* node_ptr_ = nullptr;
-  
-  typename rclcpp::Publisher<T>::SharedPtr sensor_publisher_;
-  
-  std::string sensor_id_;  
+  typename rclcpp::Publisher<T>::SharedPtr sensor_publisher_;  
   T msg_data_;
 
 }; //class Sensor

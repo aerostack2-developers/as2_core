@@ -9,6 +9,7 @@
 #include <string>
 
 #include "node.hpp"
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
@@ -16,21 +17,27 @@
 #include "aerostack2_msgs/msg/platform_control_mode.hpp"
 #include "aerostack2_msgs/msg/platform_status.hpp"
 #include "aerostack2_msgs/srv/set_platform_control_mode.hpp"
+#include "aerostack2_core/naming.hpp"
+
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+
+
 
 namespace aerostack2
 {
 class AerialPlatform : public aerostack2::Node
 {
 public:
-  AerialPlatform(const std::string& name);
+  AerialPlatform();
   
+  //TODO
   virtual bool ownConfigureSensors()= 0;
-  virtual bool ownReadSensors()= 0;
   virtual bool ownPublishSensorData()= 0;
 
   virtual bool ownSetArmingState(bool state)= 0;
   virtual bool ownSetOffboardControl(bool offboard) = 0;
-  virtual aerostack2_msgs::msg::PlatformStatus ownSetPlatformStatus() = 0 ;
+  virtual aerostack2_msgs::msg::PlatformStatus ownSetPlatformStatus() = 0;
   
   virtual bool ownSetPlatformControlMode(const aerostack2_msgs::msg::PlatformControlMode & msg) = 0;
   virtual bool ownSendCommand(const aerostack2_msgs::msg::PlatformControlMode & msg) = 0;
@@ -41,7 +48,6 @@ protected:
   bool readSensors();
   bool publishSensorData();
 
-
   bool setArmingState(bool state);
   bool setOffboardControl(bool offboard);
   aerostack2_msgs::msg::PlatformStatus setPlatformStatus();
@@ -49,7 +55,14 @@ protected:
   bool setPlatformControlMode(const aerostack2_msgs::msg::PlatformControlMode & msg);
   bool sendCommand(const aerostack2_msgs::msg::PlatformControlMode & msg);
 
+  aerostack2::names::global_topics::actuator_commands::POSE_COMMAND_TYPE  command_pose_msg_;
+  aerostack2::names::global_topics::actuator_commands::TWIST_COMMAND_TYPE command_twist_msg_;
+  
+
+
+
 private:
+  
 
   aerostack2_msgs::msg::PlatformStatus platform_status_;
 
@@ -60,7 +73,14 @@ private:
   void setPlatformControlModeSrvCall( const std::shared_ptr<aerostack2_msgs::srv::SetPlatformControlMode::Request> request,
                                             std::shared_ptr<aerostack2_msgs::srv::SetPlatformControlMode::Response> response);
 
+  // bool setArmingStateSrvCall(const std::shared_ptr<std_msgs::msg::Bool> request,);
+  
   rclcpp::Publisher<aerostack2_msgs::msg::PlatformStatus>::SharedPtr platform_status_pub_;
+
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_command_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr twist_command_sub_;
+  
+
   void publishPlatformStatus();
 
   

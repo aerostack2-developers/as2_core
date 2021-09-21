@@ -2,20 +2,34 @@
 
 #include "aerial_platform.hpp"
 
-namespace aerostack2{
+using namespace aerostack2::names;
+using namespace aerostack2::names;
 
-AerialPlatform::AerialPlatform(const std::string& name)
-    : aerostack2::Node(name)
+namespace aerostack2
+{
+
+AerialPlatform::AerialPlatform()
+    : aerostack2::Node(std::string("platform"))
   {
     
+    pose_command_sub_ = this->create_subscription<global_topics::actuator_commands::POSE_COMMAND_TYPE>(
+      this->generate_topic_name(global_topics::actuator_commands::POSE_COMMAND) , 10,
+      [this](const global_topics::actuator_commands::POSE_COMMAND_TYPE::ConstSharedPtr msg) {this->command_pose_msg_ = *msg.get();});
+    
+
+    twist_command_sub_ = this->create_subscription<global_topics::actuator_commands::TWIST_COMMAND_TYPE>(
+      this->generate_topic_name(global_topics::actuator_commands::TWIST_COMMAND) , 10,
+      [this](const global_topics::actuator_commands::TWIST_COMMAND_TYPE::ConstSharedPtr msg) {this->command_twist_msg_ = *msg.get();});
+    
+
     set_platform_mode_srv_ = this->create_service<aerostack2_msgs::srv::SetPlatformControlMode>("set_platform_control_mode", 
                 std::bind(&AerialPlatform::setPlatformControlModeSrvCall,this, 
                 std::placeholders::_1, // Corresponds to the 'request'  input
                 std::placeholders::_2  // Corresponds to the 'response' input
                 ));
 
-    std::string topic_name = this->get_drone_id() + "/" + this->get_name() + "/platform_status";
-    platform_status_pub_ = this->create_publisher<aerostack2_msgs::msg::PlatformStatus>(topic_name, 10);
+    platform_status_pub_ = this->create_publisher<aerostack2_msgs::msg::PlatformStatus>(this->generate_local_topic_name("platform_status"), 10);
+
   };
 
 void AerialPlatform::setPlatformControlModeSrvCall( const std::shared_ptr<aerostack2_msgs::srv::SetPlatformControlMode::Request> request,
@@ -34,17 +48,18 @@ void AerialPlatform::setPlatformControlModeSrvCall( const std::shared_ptr<aerost
     return sensors_configured_;
   };
   
-  bool AerialPlatform::readSensors(){
+
+  bool AerialPlatform::publishSensorData()
+  {
     if (!sensors_configured_){
       RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "ERROR: Sensor are not configured yet");
       return false;
     }
     else{
-      return ownReadSensors();
+      publishPlatformStatus();
+      return ownPublishSensorData();
     }
-  };
 
-  bool AerialPlatform::publishSensorData(){
     publishPlatformStatus();
     return ownPublishSensorData();
   };
