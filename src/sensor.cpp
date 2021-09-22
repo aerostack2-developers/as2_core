@@ -2,8 +2,6 @@
 
 #include "sensor.hpp"
 
-namespace aerostack2{
-
- 
-
-};  //end namespace
+namespace aerostack2
+{
+};  // namespace aerostack2
