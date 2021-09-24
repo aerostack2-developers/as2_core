@@ -6,6 +6,7 @@
 
 #include <sensor_msgs/msg/imu.hpp>
 #include <aerostack2_msgs/msg/platform_status.hpp>
+#include <aerostack2_msgs/msg/thrust.hpp>
 
 namespace aerostack2
 {
@@ -20,6 +21,9 @@ using POSE_COMMAND_TYPE = geometry_msgs::msg::PoseStamped;
 
 const std::string TWIST_COMMAND = "actuator_command/twist";
 using TWIST_COMMAND_TYPE = geometry_msgs::msg::TwistStamped;
+
+const std::string THRUST_COMMAND = "actuator_command/thrust";
+using THRUST_COMMAND_TYPE = aerostack2_msgs::msg::Thrust;
 
 }  // namespace actuator_commands
 

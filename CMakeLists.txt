@@ -11,9 +11,10 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(std_srvs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(aerostack2_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -37,7 +38,7 @@ set(SOURCE_CPP_FILES
 )
 
 add_library(${PROJECT_NAME} ${HEADER_HPP_FILES} ${SOURCE_CPP_FILES})
-ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs std_srvs aerostack2_msgs)
+ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs std_srvs sensor_msgs nav_msgs aerostack2_msgs)
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
 

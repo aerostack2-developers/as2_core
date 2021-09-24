@@ -9,6 +9,10 @@ namespace aerostack2
 {
 AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
 {
+  this->declare_parameter<bool>("simulation_mode", false);
+
+  this->get_parameter("simulation_mode", simulation_mode_enabled_);
+
   pose_command_sub_ =
     this->create_subscription<global_topics::actuator_commands::POSE_COMMAND_TYPE>(
       this->generate_topic_name(global_topics::actuator_commands::POSE_COMMAND), 10,
@@ -22,6 +26,14 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
       [this](const global_topics::actuator_commands::TWIST_COMMAND_TYPE::ConstSharedPtr msg) {
         this->command_twist_msg_ = *msg.get();
       });
+
+  thrust_command_sub_ =
+    this->create_subscription<global_topics::actuator_commands::THRUST_COMMAND_TYPE>(
+      this->generate_topic_name(global_topics::actuator_commands::THRUST_COMMAND), 10,
+      [this](const global_topics::actuator_commands::THRUST_COMMAND_TYPE::ConstSharedPtr msg) {
+        this->command_thrust_msg_ = *msg.get();
+      });
+
 
   set_platform_mode_srv_ = this->create_service<aerostack2_msgs::srv::SetPlatformControlMode>(
     this->generate_srv_name("/set_platform_control_mode"),
@@ -48,8 +60,14 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
   platform_status_pub_ = this->create_publisher<global_topics::platform::PLATFORM_STATUS_TYPE>(
     this->generate_srv_name(global_topics::platform::PLATFORM_STATUS), 10);
 
+  // FIXME: Frecuency is hardcoded!!
   platform_state_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(100), std::bind(&AerialPlatform::setPlatformStatus, this));
+
+  // TODO: remove timer_test
+  // static auto timer_test = this->create_wall_timer(std::chrono::milliseconds(1), [this]() {
+  //   std::cout << "simulation mode = " << this->simulation_mode_enabled_ << std::endl;
+  // });
 };
 
 bool AerialPlatform::setArmingState(bool state)
@@ -78,7 +96,7 @@ bool AerialPlatform::setOffboardControl(bool offboard)
 
 aerostack2_msgs::msg::PlatformStatus AerialPlatform::setPlatformStatus()
 {
-  platform_status_ = ownSetPlatformStatus();
+  platform_status_ = *(ownSetPlatformStatus().get());
   publishPlatformStatus();
   return platform_status_;
 };
@@ -88,14 +106,14 @@ bool AerialPlatform::setPlatformControlMode(const aerostack2_msgs::msg::Platform
   control_mode_settled_ = ownSetPlatformControlMode(msg);
   return control_mode_settled_;
 };
-bool AerialPlatform::sendCommand(const aerostack2_msgs::msg::PlatformControlMode & msg)
+bool AerialPlatform::sendCommand()
 {
   if (!control_mode_settled_) {
     RCLCPP_ERROR(
       rclcpp::get_logger("rclcpp"), "ERROR: Sensor Platform control mode is not settled yet");
     return false;
   } else {
-    return ownSendCommand(msg);
+    return ownSendCommand();
   }
 };
 

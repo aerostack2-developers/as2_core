@@ -11,6 +11,8 @@
 
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>aerostack2_msgs</depend>
   <depend>std_srvs</depend>
   
