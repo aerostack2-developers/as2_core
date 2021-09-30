@@ -68,6 +68,7 @@ public:
 
 private:
   bool simulation_mode_enabled_ = false;
+  bool sending_commands_ = false;
   rclcpp::TimerBase::SharedPtr platform_state_timer_;
 
   bool setArmingState(bool state);

@@ -64,10 +64,16 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
   platform_state_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(100), std::bind(&AerialPlatform::setPlatformStatus, this));
 
-  // TODO: remove timer_test
-  // static auto timer_test = this->create_wall_timer(std::chrono::milliseconds(1), [this]() {
-  //   std::cout << "simulation mode = " << this->simulation_mode_enabled_ << std::endl;
-  // });
+  // // TODO: remove timer_test
+  //  static auto timer_test = this->create_wall_timer(std::chrono::milliseconds(1000), [this]() {
+  //    std::cout << "simulation mode = " << this->simulation_mode_enabled_ << std::endl;
+  //  });
+  // TODO: rethink this function
+   static auto timer_commands_ = this->create_wall_timer(std::chrono::milliseconds(10), [this]() {
+     if (this->sending_commands_){
+       this->sendCommand();
+     }
+   });
 };
 
 bool AerialPlatform::setArmingState(bool state)
@@ -110,7 +116,7 @@ bool AerialPlatform::sendCommand()
 {
   if (!control_mode_settled_) {
     RCLCPP_ERROR(
-      rclcpp::get_logger("rclcpp"), "ERROR: Sensor Platform control mode is not settled yet");
+      rclcpp::get_logger("rclcpp"), "ERROR: Platform control mode is not settled yet");
     return false;
   } else {
     return ownSendCommand();
@@ -123,19 +129,23 @@ void AerialPlatform::setPlatformControlModeSrvCall(
   const std::shared_ptr<aerostack2_msgs::srv::SetPlatformControlMode::Request> request,
   std::shared_ptr<aerostack2_msgs::srv::SetPlatformControlMode::Response> response)
 {
-  bool sucess = this->setPlatformControlMode(request->control_mode);
-  if (!sucess) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("rclcpp"), "ERROR: UNABLE TO SET THIS CONTROL MODE TO THIS PLATFORM");
+  bool success = this->setPlatformControlMode(request->control_mode);
+  if (!success) {
+    RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO SET THIS CONTROL MODE TO THIS PLATFORM");
   }
-  response->success = sucess;
+  sending_commands_ = success;
+  response->success = success;
 };
 
 void AerialPlatform::setOffboardModeSrvCall(
   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
   std::shared_ptr<std_srvs::srv::SetBool::Response> response)
 {
-  response->success = setOffboardControl(request->data);
+  bool success = setOffboardControl(request->data);
+  // FIXME: Adapt this for px4
+  control_mode_settled_ = success;
+  sending_commands_ = success;
+  response->success = success;
 }
 
 void AerialPlatform::setArmingStateSrvCall(
