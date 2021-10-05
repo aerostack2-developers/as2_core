@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME}
     $<INSTALL_INTERFACE:include>)
 
 ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs std_srvs sensor_msgs nav_msgs aerostack2_msgs geometry_msgs)
-ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   ament_cmake
   rclcpp std_msgs std_srvs sensor_msgs nav_msgs aerostack2_msgs geometry_msgs

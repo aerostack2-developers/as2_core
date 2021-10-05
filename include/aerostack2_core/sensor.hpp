@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include <geometry_msgs/msg/pose_stamped.hpp>
 #include "node.hpp"
 #include "aerial_platform.hpp"
 #include "rclcpp/rclcpp.hpp"
