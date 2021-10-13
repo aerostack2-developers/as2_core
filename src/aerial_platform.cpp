@@ -68,12 +68,12 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
   //  static auto timer_test = this->create_wall_timer(std::chrono::milliseconds(1000), [this]() {
   //    std::cout << "simulation mode = " << this->simulation_mode_enabled_ << std::endl;
   //  });
-  // TODO: rethink this function
-   static auto timer_commands_ = this->create_wall_timer(std::chrono::milliseconds(10), [this]() {
-     if (this->sending_commands_){
-       this->sendCommand();
-     }
-   });
+  // FIXME: rethink this function
+  //  static auto timer_commands_ = this->create_wall_timer(std::chrono::milliseconds(10), [this]() {
+  //    if (this->sending_commands_){
+  //      this->sendCommand();
+  //    }
+  //  });
 };
 
 bool AerialPlatform::setArmingState(bool state)
