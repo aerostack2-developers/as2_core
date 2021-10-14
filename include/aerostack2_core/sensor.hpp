@@ -24,7 +24,7 @@ public:
   GenericSensor(const std::string & id, aerostack2::Node * node_ptr)
   : sensor_id_(id), node_ptr_(node_ptr)
   {
-    topic_name_ = node_ptr_->get_drone_id() + "/" + node_ptr->get_name() + "/" + sensor_id_;
+    topic_name_ = std::string(node_ptr->get_name()) + "/" + sensor_id_;
   }
 
 protected:
