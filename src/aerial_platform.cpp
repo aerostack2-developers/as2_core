@@ -9,10 +9,23 @@ namespace aerostack2
 {
 AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
 {
+  
   this->declare_parameter<bool>("simulation_mode", false);
+  this->declare_parameter<float>("mass",1.0);
+  this->declare_parameter<float>("max_thrust",0.0);
 
-  this->get_parameter("simulation_mode", simulation_mode_enabled_);
+  this->get_parameter("simulation_mode", parameters_.simulation_mode);
+  this->get_parameter("mass", parameters_.mass);
+  this->get_parameter("max_thrust", parameters_.max_thrust);
 
+  RCLCPP_INFO(this->get_logger(), "simulation_mode: %d", parameters_.simulation_mode);
+  RCLCPP_INFO(this->get_logger(), "mass: %.2f kg", parameters_.mass);
+  if (parameters_.max_thrust == 0){
+    RCLCPP_WARN(this->get_logger(), "max_thrust is 0 : CODE MAY FAIL IF THRUST IS NORMALIZED");
+  }else{
+    RCLCPP_INFO(this->get_logger(), "max_thrust: %.2f N", parameters_.max_thrust);
+  }
+  
   pose_command_sub_ =
     this->create_subscription<global_topics::actuator_commands::POSE_COMMAND_TYPE>(
       this->generate_topic_name(global_topics::actuator_commands::POSE_COMMAND), 10,

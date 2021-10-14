@@ -27,6 +27,13 @@
 
 namespace aerostack2
 {
+
+struct AerialPlatformParameters{
+  float mass;
+  float max_thrust;
+  bool simulation_mode;
+};
+
 class AerialPlatform : public aerostack2::Node
 {
 private:
@@ -64,10 +71,14 @@ public:
   virtual bool ownSetPlatformControlMode(const aerostack2_msgs::msg::PlatformControlMode & msg) = 0;
   virtual bool ownSendCommand() = 0;
 
-  bool getFlagSimulationMode(){return simulation_mode_enabled_;}
+  inline bool getFlagSimulationMode() const {return parameters_.simulation_mode;}
+  inline float getMass() const {return parameters_.mass;}
+  inline float getMaxThrust() const {return parameters_.max_thrust;}
 
 private:
-  bool simulation_mode_enabled_ = false;
+
+  aerostack2::AerialPlatformParameters parameters_;
+
   bool sending_commands_ = false;
   rclcpp::TimerBase::SharedPtr platform_state_timer_;
 

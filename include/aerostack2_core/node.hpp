@@ -21,14 +21,14 @@ class Node : public rclcpp::Node
 {
 public:
   Node(const std::string & name) : rclcpp::Node(name){};
-  std::string get_drone_id() { return "drone0"; };
+  std::string get_drone_id() { return "";};
 
   std::string generate_local_topic_name(const std::string & name)
   {
     if (name.find("/") == 0) {
-      return "/" + this->get_drone_id() + this->get_name() + name;
+      return this->get_name() + name;
     } else {
-      return "/" + this->get_drone_id() + this->get_name() + "/" + name;
+      return std::string(this->get_name()) + "/" + name;
     }
   };
 
