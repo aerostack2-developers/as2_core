@@ -1,1 +1,1 @@
-# aerostack_core
+# aerostack2_core
