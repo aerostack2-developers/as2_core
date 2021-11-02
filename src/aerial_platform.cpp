@@ -101,6 +101,7 @@ bool AerialPlatform::setArmingState(bool state)
   return false;
 };
 
+
 bool AerialPlatform::setOffboardControl(bool offboard)
 {
   if (offboard == platform_status_.offboard && offboard == true) {
