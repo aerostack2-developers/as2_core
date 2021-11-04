@@ -1,4 +1,34 @@
-// "Copyright [year] <Copyright Owner>"
+/*!*******************************************************************************************
+ *  \file       node.cpp
+ *  \brief      Aerostack2 node implementation file.
+ *  \authors    Miguel Fernandez Cortizas
+ *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
+ *              All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ********************************************************************************/
 
 #ifndef AEROSTACK2_NODE_HPP_
 #define AEROSTACK2_NODE_HPP_
@@ -12,9 +42,9 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
 
-
 #include "naming.hpp"
 
+//TODO: Clean generate topic names functions
 namespace aerostack2
 {
 /**
@@ -30,51 +60,25 @@ public:
    * @param name Node name
    */
   Node(const std::string & name) : rclcpp::Node(name){};
-  std::string get_drone_id() { return "";};
 
   /**
-   * @brief 
+   * @brief transform an string into local topic name inside drone namespace and node namespace
    * 
-   * @param name 
-   * @return std::string 
+   * @param name source string
+   * @return std::string  result name
    */
-
-  std::string generate_local_topic_name(const std::string & name)
-  {
-    if (name.find("/") == 0) {
-      return this->get_name() + name;
-    } else {
-      return std::string(this->get_name()) + "/" + name;
-    }
-  };
+  std::string generate_local_name(const std::string & name);
 
   /**
-   * @brief 
+   * @brief transform an string into global topic name inside drone namespace
    * 
-   * @param name 
-   * @return std::string 
+   * @param name source string
+   * @return std::string result name
    */
-  std::string generate_topic_name(const std::string & name);
+  std::string generate_global_name(const std::string & name);
 
-  /**
-   * @brief 
-   * 
-   * @param name 
-   * @return std::string 
-   */
-  std::string generate_srv_name(const std::string & name) { return generate_topic_name(name); }
-
-  /** 
-   * @brief convert srv_name in the local scope of the node
-   * 
-   * @param name 
-   * @return std::string 
-   */
-  std::string generate_local_srv_name(const std::string & name)
-  {
-    return generate_local_topic_name(name);
-  }
 };
+
 }  // namespace aerostack2
 
 #endif  //AEROSTACK2_NODE_HPP_

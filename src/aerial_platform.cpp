@@ -3,7 +3,6 @@
 #include "aerial_platform.hpp"
 
 using namespace aerostack2::names;
-using namespace aerostack2::names;
 
 namespace aerostack2
 {
@@ -28,28 +27,28 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
   
   pose_command_sub_ =
     this->create_subscription<global_topics::actuator_commands::POSE_COMMAND_TYPE>(
-      this->generate_topic_name(global_topics::actuator_commands::POSE_COMMAND), 10,
+      this->generate_global_name(global_topics::actuator_commands::POSE_COMMAND), 10,
       [this](const global_topics::actuator_commands::POSE_COMMAND_TYPE::ConstSharedPtr msg) {
         this->command_pose_msg_ = *msg.get();
       });
 
   twist_command_sub_ =
     this->create_subscription<global_topics::actuator_commands::TWIST_COMMAND_TYPE>(
-      this->generate_topic_name(global_topics::actuator_commands::TWIST_COMMAND), 10,
+      this->generate_global_name(global_topics::actuator_commands::TWIST_COMMAND), 10,
       [this](const global_topics::actuator_commands::TWIST_COMMAND_TYPE::ConstSharedPtr msg) {
         this->command_twist_msg_ = *msg.get();
       });
 
   thrust_command_sub_ =
     this->create_subscription<global_topics::actuator_commands::THRUST_COMMAND_TYPE>(
-      this->generate_topic_name(global_topics::actuator_commands::THRUST_COMMAND), 10,
+      this->generate_global_name(global_topics::actuator_commands::THRUST_COMMAND), 10,
       [this](const global_topics::actuator_commands::THRUST_COMMAND_TYPE::ConstSharedPtr msg) {
         this->command_thrust_msg_ = *msg.get();
       });
 
 
   set_platform_mode_srv_ = this->create_service<aerostack2_msgs::srv::SetPlatformControlMode>(
-    this->generate_srv_name("/set_platform_control_mode"),
+    this->generate_global_name("/set_platform_control_mode"),
     std::bind(
       &AerialPlatform::setPlatformControlModeSrvCall, this,
       std::placeholders::_1,  // Corresponds to the 'request'  input
@@ -71,7 +70,7 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
                            ));
 
   platform_status_pub_ = this->create_publisher<global_topics::platform::PLATFORM_STATUS_TYPE>(
-    this->generate_srv_name(global_topics::platform::PLATFORM_STATUS), 10);
+    this->generate_global_name(global_topics::platform::PLATFORM_STATUS), 10);
 
   // FIXME: Frecuency is hardcoded!!
   platform_state_timer_ = this->create_wall_timer(
