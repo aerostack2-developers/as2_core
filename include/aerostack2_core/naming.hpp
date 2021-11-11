@@ -6,6 +6,7 @@
 
 #include <sensor_msgs/msg/imu.hpp>
 #include <aerostack2_msgs/msg/platform_status.hpp>
+#include <aerostack2_msgs/msg/platform_info.hpp>
 #include <aerostack2_msgs/msg/thrust.hpp>
 
 
@@ -33,7 +34,7 @@ namespace aerostack2
       namespace platform
       {
         const std::string PLATFORM_STATUS = "platform/platform_status";
-        using PLATFORM_STATUS_TYPE = aerostack2_msgs::msg::PlatformStatus;
+        using PLATFORM_STATUS_TYPE = aerostack2_msgs::msg::PlatformInfo;
 
       } // namespace platform
 

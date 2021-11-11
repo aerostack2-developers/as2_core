@@ -1,6 +1,6 @@
 /*!*******************************************************************************************
- *  \file       node.hpp
- *  \brief      Aerostack2 node header file.
+ *  \file       platform_state_machine.cpp
+ *  \brief      Aerostack2 Platform State Machine implementation file.
  *  \authors    Miguel Fernandez Cortizas
  *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
  *              All Rights Reserved
@@ -30,54 +30,4 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************************************************************************/
 
-#ifndef AEROSTACK2_NODE_HPP_
-#define AEROSTACK2_NODE_HPP_
-
-#include <chrono>
-#include <functional>
-#include <memory>
-#include <string>
-
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/publisher.hpp"
-#include "rclcpp/publisher_options.hpp"
-
-#include "naming.hpp"
-
-namespace aerostack2
-{
-/**
- * @brief Basic Aerostack2 Node, it heritages all the functionality of an rclcpp::Node
- * 
- */
-class Node : public rclcpp::Node
-{
-public:
-  /**
-   * @brief Construct a new Node object
-   * 
-   * @param name Node name
-   */
-  Node(const std::string & name) : rclcpp::Node(name){};
-
-  /**
-   * @brief transform an string into local topic name inside drone namespace and node namespace
-   * 
-   * @param name source string
-   * @return std::string  result name
-   */
-  std::string generate_local_name(const std::string & name);
-
-  /**
-   * @brief transform an string into global topic name inside drone namespace
-   * 
-   * @param name source string
-   * @return std::string result name
-   */
-  std::string generate_global_name(const std::string & name);
-
-};
-
-}  // namespace aerostack2
-
-#endif  //AEROSTACK2_NODE_HPP_
+#include "platform_state_machine.hpp"

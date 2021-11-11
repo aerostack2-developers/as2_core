@@ -16,6 +16,7 @@
 
 #include "aerostack2_msgs/msg/platform_control_mode.hpp"
 #include "aerostack2_msgs/msg/platform_status.hpp"
+#include "aerostack2_msgs/msg/platform_info.hpp"
 #include "aerostack2_msgs/srv/set_platform_control_mode.hpp"
 #include "aerostack2_core/naming.hpp"
 
@@ -37,7 +38,7 @@ struct AerialPlatformParameters{
 class AerialPlatform : public aerostack2::Node
 {
 private:
-  rclcpp::Publisher<aerostack2_msgs::msg::PlatformStatus>::SharedPtr platform_status_pub_;
+  rclcpp::Publisher<aerostack2_msgs::msg::PlatformInfo>::SharedPtr platform_info_pub_;
 
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_command_sub_;
   rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr twist_command_sub_;
@@ -51,7 +52,7 @@ private:
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_offboard_mode_srv_;
 
   bool control_mode_settled_ = false;
-  aerostack2_msgs::msg::PlatformStatus platform_status_;
+  aerostack2_msgs::msg::PlatformInfo platform_info_;
 
 protected:
   aerostack2::names::global_topics::actuator_commands::POSE_COMMAND_TYPE command_pose_msg_;
@@ -66,7 +67,7 @@ public:
 
   virtual bool ownSetArmingState(bool state) = 0;
   virtual bool ownSetOffboardControl(bool offboard) = 0;
-  virtual std::shared_ptr<aerostack2_msgs::msg::PlatformStatus> ownSetPlatformStatus() = 0;
+  virtual std::shared_ptr<aerostack2_msgs::msg::PlatformInfo> ownSetPlatformInfo() = 0;
 
   virtual bool ownSetPlatformControlMode(const aerostack2_msgs::msg::PlatformControlMode & msg) = 0;
   virtual bool ownSendCommand() = 0;
@@ -84,7 +85,7 @@ private:
 
   bool setArmingState(bool state);
   bool setOffboardControl(bool offboard);
-  aerostack2_msgs::msg::PlatformStatus setPlatformStatus();
+  aerostack2_msgs::msg::PlatformInfo setPlatformInfo();
 
   bool setPlatformControlMode(const aerostack2_msgs::msg::PlatformControlMode & msg);
   bool sendCommand();
@@ -104,7 +105,7 @@ private:
     std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // Publish functions
-  void publishPlatformStatus();
+  void publishPlatformInfo();
 
 };  //class AerialPlatform
 

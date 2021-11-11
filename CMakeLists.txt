@@ -30,6 +30,7 @@ set(SOURCE_CPP_FILES
   src/node.cpp
   src/sensor.cpp
   src/aerial_platform.cpp
+  src/platform_state_machine.cpp
 )
 
 add_library(${PROJECT_NAME} ${SOURCE_CPP_FILES})
@@ -47,6 +48,9 @@ ament_export_dependencies(
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
+
+add_executable(platform_state_machine_test tests/platform_state_machine_test.cpp src/platform_state_machine.cpp)
+target_link_libraries(platform_state_machine_test ${PROJECT_NAME}) 
 
 
 if(BUILD_TESTING)

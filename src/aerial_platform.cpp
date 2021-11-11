@@ -69,30 +69,32 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
                            std::placeholders::_2   // Corresponds to the 'response' input
                            ));
 
-  platform_status_pub_ = this->create_publisher<global_topics::platform::PLATFORM_STATUS_TYPE>(
+  platform_info_pub_ = this->create_publisher<global_topics::platform::PLATFORM_STATUS_TYPE>(
     this->generate_global_name(global_topics::platform::PLATFORM_STATUS), 10);
 
   // FIXME: Frecuency is hardcoded!!
   platform_state_timer_ = this->create_wall_timer(
-    std::chrono::milliseconds(100), std::bind(&AerialPlatform::setPlatformStatus, this));
+    std::chrono::milliseconds(100), std::bind(&AerialPlatform::setPlatformInfo, this));
 
   // // TODO: remove timer_test
   //  static auto timer_test = this->create_wall_timer(std::chrono::milliseconds(1000), [this]() {
   //    std::cout << "simulation mode = " << this->simulation_mode_enabled_ << std::endl;
   //  });
+
   // FIXME: rethink this function
   //  static auto timer_commands_ = this->create_wall_timer(std::chrono::milliseconds(10), [this]() {
   //    if (this->sending_commands_){
   //      this->sendCommand();
   //    }
   //  });
+
 };
 
 bool AerialPlatform::setArmingState(bool state)
 {
-  if (state == platform_status_.armed && state == true) {
+  if (state == platform_info_.armed && state == true) {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already armed");
-  } else if (state == platform_status_.armed && state == false) {
+  } else if (state == platform_info_.armed && state == false) {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already disarmed");
   } else {
     return ownSetArmingState(state);
@@ -103,9 +105,9 @@ bool AerialPlatform::setArmingState(bool state)
 
 bool AerialPlatform::setOffboardControl(bool offboard)
 {
-  if (offboard == platform_status_.offboard && offboard == true) {
+  if (offboard == platform_info_.offboard && offboard == true) {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already in OFFBOARD mode");
-  } else if (offboard == platform_status_.offboard && offboard == false) {
+  } else if (offboard == platform_info_.offboard && offboard == false) {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already in MANUAL mode");
   } else {
     return ownSetOffboardControl(offboard);
@@ -113,11 +115,11 @@ bool AerialPlatform::setOffboardControl(bool offboard)
   return false;
 };
 
-aerostack2_msgs::msg::PlatformStatus AerialPlatform::setPlatformStatus()
+aerostack2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
 {
-  platform_status_ = *(ownSetPlatformStatus().get());
-  publishPlatformStatus();
-  return platform_status_;
+  platform_info_ = *(ownSetPlatformInfo().get());
+  publishPlatformInfo();
+  return platform_info_;
 };
 
 bool AerialPlatform::setPlatformControlMode(const aerostack2_msgs::msg::PlatformControlMode & msg)
@@ -169,6 +171,6 @@ void AerialPlatform::setArmingStateSrvCall(
 }
 
 // Publish Functions
-void AerialPlatform::publishPlatformStatus() { platform_status_pub_->publish(platform_status_); }
+void AerialPlatform::publishPlatformInfo() { platform_info_pub_->publish(platform_info_); }
 
 };  // namespace aerostack2
