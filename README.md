@@ -1,9 +1,9 @@
-# aerostack2_core
+# as2_core
 
 
 For generating doxygen files
 
-In aerostack2_core folder:
+In as2_core folder:
 ...
 $ doxygen doxygen.dox
 ...

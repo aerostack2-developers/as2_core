@@ -2,16 +2,15 @@
 
 #include "aerial_platform.hpp"
 
-using namespace aerostack2::names;
+using namespace as2::names;
 
-namespace aerostack2
+namespace as2
 {
-AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
+AerialPlatform::AerialPlatform() : as2::Node(std::string("platform"))
 {
-  
   this->declare_parameter<bool>("simulation_mode", false);
-  this->declare_parameter<float>("mass",1.0);
-  this->declare_parameter<float>("max_thrust",0.0);
+  this->declare_parameter<float>("mass", 1.0);
+  this->declare_parameter<float>("max_thrust", 0.0);
 
   this->get_parameter("simulation_mode", parameters_.simulation_mode);
   this->get_parameter("mass", parameters_.mass);
@@ -19,12 +18,12 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
 
   RCLCPP_INFO(this->get_logger(), "simulation_mode: %d", parameters_.simulation_mode);
   RCLCPP_INFO(this->get_logger(), "mass: %.2f kg", parameters_.mass);
-  if (parameters_.max_thrust == 0){
+  if (parameters_.max_thrust == 0) {
     RCLCPP_WARN(this->get_logger(), "max_thrust is 0 : CODE MAY FAIL IF THRUST IS NORMALIZED");
-  }else{
+  } else {
     RCLCPP_INFO(this->get_logger(), "max_thrust: %.2f N", parameters_.max_thrust);
   }
-  
+
   pose_command_sub_ =
     this->create_subscription<global_topics::actuator_commands::POSE_COMMAND_TYPE>(
       this->generate_global_name(global_topics::actuator_commands::POSE_COMMAND), 10,
@@ -46,8 +45,7 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
         this->command_thrust_msg_ = *msg.get();
       });
 
-
-  set_platform_mode_srv_ = this->create_service<aerostack2_msgs::srv::SetPlatformControlMode>(
+  set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetPlatformControlMode>(
     this->generate_global_name("/set_platform_control_mode"),
     std::bind(
       &AerialPlatform::setPlatformControlModeSrvCall, this,
@@ -87,7 +85,6 @@ AerialPlatform::AerialPlatform() : aerostack2::Node(std::string("platform"))
   //      this->sendCommand();
   //    }
   //  });
-
 };
 
 bool AerialPlatform::setArmingState(bool state)
@@ -102,7 +99,6 @@ bool AerialPlatform::setArmingState(bool state)
   return false;
 };
 
-
 bool AerialPlatform::setOffboardControl(bool offboard)
 {
   if (offboard == platform_info_.offboard && offboard == true) {
@@ -115,14 +111,14 @@ bool AerialPlatform::setOffboardControl(bool offboard)
   return false;
 };
 
-aerostack2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
+as2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
 {
   platform_info_ = *(ownSetPlatformInfo().get());
   publishPlatformInfo();
   return platform_info_;
 };
 
-bool AerialPlatform::setPlatformControlMode(const aerostack2_msgs::msg::PlatformControlMode & msg)
+bool AerialPlatform::setPlatformControlMode(const as2_msgs::msg::PlatformControlMode & msg)
 {
   control_mode_settled_ = ownSetPlatformControlMode(msg);
   return control_mode_settled_;
@@ -130,8 +126,7 @@ bool AerialPlatform::setPlatformControlMode(const aerostack2_msgs::msg::Platform
 bool AerialPlatform::sendCommand()
 {
   if (!control_mode_settled_) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("rclcpp"), "ERROR: Platform control mode is not settled yet");
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "ERROR: Platform control mode is not settled yet");
     return false;
   } else {
     return ownSendCommand();
@@ -141,8 +136,8 @@ bool AerialPlatform::sendCommand()
 //Services Callbacks
 
 void AerialPlatform::setPlatformControlModeSrvCall(
-  const std::shared_ptr<aerostack2_msgs::srv::SetPlatformControlMode::Request> request,
-  std::shared_ptr<aerostack2_msgs::srv::SetPlatformControlMode::Response> response)
+  const std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Request> request,
+  std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Response> response)
 {
   bool success = this->setPlatformControlMode(request->control_mode);
   if (!success) {
@@ -173,4 +168,4 @@ void AerialPlatform::setArmingStateSrvCall(
 // Publish Functions
 void AerialPlatform::publishPlatformInfo() { platform_info_pub_->publish(platform_info_); }
 
-};  // namespace aerostack2
+};  // namespace as2

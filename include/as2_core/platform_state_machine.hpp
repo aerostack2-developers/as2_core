@@ -33,15 +33,14 @@
 #ifndef AEROSTACK2_PLATFORM_STATE_MACHINE_HPP_
 #define AEROSTACK2_PLATFORM_STATE_MACHINE_HPP_
 
-#include "aerostack2_core/node.hpp"
-#include "aerostack2_msgs/msg/platform_status.hpp"
-
 #include <string>
 #include <vector>
 
-namespace as2{
+#include "as2_core/node.hpp"
+#include "as2_msgs/msg/platform_status.hpp"
 
-
+namespace as2
+{
 /**
  * @brief Data Structure for defining the state machine transitions.
  */
@@ -79,8 +78,7 @@ struct StateMachineTransition
 class PlatformStateMachine
 {
 public:
-  enum Event
-  {
+  enum Event {
     ARM,
     DISARM,
     TAKE_OFF,
@@ -91,17 +89,17 @@ public:
   };
 
 public:
-
   /**
    * @brief Constructor of the Platform State Machine.
    * @param node_ptr Pointer to an aerostack2 node.
    */
-  PlatformStateMachine(){
-    state_.state = aerostack2_msgs::msg::PlatformStatus::DISARMED;
+  PlatformStateMachine()
+  {
+    state_.state = as2_msgs::msg::PlatformStatus::DISARMED;
     defineTransitions();
   };
-  // PlatformStateMachine(aerostack2::Node* node){
-  //   state_.state = aerostack2_msgs::msg::PlatformStatus::DISARMED;
+  // PlatformStateMachine(as2::Node* node){
+  //   state_.state = as2_msgs::msg::PlatformStatus::DISARMED;
   // };
   ~PlatformStateMachine(){};
 
@@ -109,8 +107,8 @@ public:
    * @brief This function is in charge of handling the state machine.
    * @param event The event that triggers the state machine.
    */
-  void processEvent(const Event &event){
-
+  void processEvent(const Event & event)
+  {
     // Get the current state
     int8_t current_state = state_.state;
 
@@ -118,7 +116,7 @@ public:
     StateMachineTransition transition = getTransition(current_state, event);
 
     // If the transition is valid, change the state
-    if(transition.transition_id != -1){
+    if (transition.transition_id != -1) {
       state_.state = transition.to_state_id;
       RCLCPP_INFO(rclcpp::get_logger("FSM transition"), transition.transition_name);
     }
@@ -131,11 +129,13 @@ public:
    * @param event 
    * @return StateMachineTransition 
    */
-  StateMachineTransition getTransition(int8_t current_state, const Event &event){
+  StateMachineTransition getTransition(int8_t current_state, const Event & event)
+  {
     StateMachineTransition transition;
     transition.transition_id = -1;
-    for(int i = 0; i < transitions_.size(); i++){
-      if(transitions_[i].from_state_id == current_state && transitions_[i].transition_id == event){
+    for (int i = 0; i < transitions_.size(); i++) {
+      if (
+        transitions_[i].from_state_id == current_state && transitions_[i].transition_id == event) {
         transition = transitions_[i];
         break;
       }
@@ -147,113 +147,74 @@ public:
    * @brief This function returns the current state of the state machine
    * @return The current Platform Status of the state machine
    */
-  aerostack2_msgs::msg::PlatformStatus getState(){
-    return state_;
-  };
+  as2_msgs::msg::PlatformStatus getState() { return state_; };
+  void setState(as2_msgs::msg::PlatformStatus state) { state_ = state; };
+  void setState(const int8_t & state) { state_.state = state; };
 
 private:
   std::vector<StateMachineTransition> transitions_;
-  aerostack2_msgs::msg::PlatformStatus state_;
-
+  as2_msgs::msg::PlatformStatus state_;
 
   /**
    * @brief in this function the state machine is created based on the transitions.
    * its called in the constructor of the class.
    */
-  void defineTransitions(){
-
+  void defineTransitions()
+  {
     transitions_.clear();
     transitions_.reserve(11);
 
     // INTIAL_STATE -> [TRANSITION] -> FINAL_STATE
-    
-    // DISARMED -> [ARM] -> ARMED 
+
+    // DISARMED -> [ARM] -> ARMED
     transitions_.emplace_back(StateMachineTransition{
-      "ARM",
-      aerostack2_msgs::msg::PlatformStatus::DISARMED,
-      Event::ARM,
-      aerostack2_msgs::msg::PlatformStatus::LANDED
-    });
+      "ARM", as2_msgs::msg::PlatformStatus::DISARMED, Event::ARM,
+      as2_msgs::msg::PlatformStatus::LANDED});
 
     // LANDED -> [DISARM] -> DISARMED
     transitions_.emplace_back(StateMachineTransition{
-      "DISARM",
-      aerostack2_msgs::msg::PlatformStatus::LANDED,
-      Event::DISARM,
-      aerostack2_msgs::msg::PlatformStatus::DISARMED
-    });
+      "DISARM", as2_msgs::msg::PlatformStatus::LANDED, Event::DISARM,
+      as2_msgs::msg::PlatformStatus::DISARMED});
 
     // LANDED -> [TAKE_OFF] -> TAKING_OFF
     transitions_.emplace_back(StateMachineTransition{
-      "TAKE_OFF",
-      aerostack2_msgs::msg::PlatformStatus::LANDED,
-      Event::TAKE_OFF,
-      aerostack2_msgs::msg::PlatformStatus::TAKING_OFF
-    });
-    
+      "TAKE_OFF", as2_msgs::msg::PlatformStatus::LANDED, Event::TAKE_OFF,
+      as2_msgs::msg::PlatformStatus::TAKING_OFF});
+
     // TAKING_OFF -> [TOOK_OFF] -> FLYING
     transitions_.emplace_back(StateMachineTransition{
-      "TOOK_OFF",
-      aerostack2_msgs::msg::PlatformStatus::TAKING_OFF,
-      Event::TOOK_OFF,
-      aerostack2_msgs::msg::PlatformStatus::FLYING
-    });
+      "TOOK_OFF", as2_msgs::msg::PlatformStatus::TAKING_OFF, Event::TOOK_OFF,
+      as2_msgs::msg::PlatformStatus::FLYING});
 
     // FLYING -> [LAND] -> LANDING
     transitions_.emplace_back(StateMachineTransition{
-      "LAND",
-      aerostack2_msgs::msg::PlatformStatus::FLYING,
-      Event::LAND,
-      aerostack2_msgs::msg::PlatformStatus::LANDING
-    });
+      "LAND", as2_msgs::msg::PlatformStatus::FLYING, Event::LAND,
+      as2_msgs::msg::PlatformStatus::LANDING});
 
     // LANDING -> [LANDED] -> LANDED
     transitions_.emplace_back(StateMachineTransition{
-      "LANDED",
-      aerostack2_msgs::msg::PlatformStatus::LANDING,
-      Event::LANDED,
-      aerostack2_msgs::msg::PlatformStatus::LANDED
-    });
+      "LANDED", as2_msgs::msg::PlatformStatus::LANDING, Event::LANDED,
+      as2_msgs::msg::PlatformStatus::LANDED});
 
     // EMERGENCY TRANSITIONS
     transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY",
-      aerostack2_msgs::msg::PlatformStatus::DISARMED,
-      Event::EMERGENCY,
-      aerostack2_msgs::msg::PlatformStatus::EMERGENCY
-    });
+      "EMERGENCY", as2_msgs::msg::PlatformStatus::DISARMED, Event::EMERGENCY,
+      as2_msgs::msg::PlatformStatus::EMERGENCY});
     transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY",
-      aerostack2_msgs::msg::PlatformStatus::LANDED,
-      Event::EMERGENCY,
-      aerostack2_msgs::msg::PlatformStatus::EMERGENCY
-    });
+      "EMERGENCY", as2_msgs::msg::PlatformStatus::LANDED, Event::EMERGENCY,
+      as2_msgs::msg::PlatformStatus::EMERGENCY});
     transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY",
-      aerostack2_msgs::msg::PlatformStatus::TAKING_OFF,
-      Event::EMERGENCY,
-      aerostack2_msgs::msg::PlatformStatus::EMERGENCY
-    });
+      "EMERGENCY", as2_msgs::msg::PlatformStatus::TAKING_OFF, Event::EMERGENCY,
+      as2_msgs::msg::PlatformStatus::EMERGENCY});
     transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY",
-      aerostack2_msgs::msg::PlatformStatus::FLYING,
-      Event::EMERGENCY,
-      aerostack2_msgs::msg::PlatformStatus::EMERGENCY
-    });
+      "EMERGENCY", as2_msgs::msg::PlatformStatus::FLYING, Event::EMERGENCY,
+      as2_msgs::msg::PlatformStatus::EMERGENCY});
     transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY",
-      aerostack2_msgs::msg::PlatformStatus::LANDING,
-      Event::EMERGENCY,
-      aerostack2_msgs::msg::PlatformStatus::EMERGENCY
-    });
-
-
+      "EMERGENCY", as2_msgs::msg::PlatformStatus::LANDING, Event::EMERGENCY,
+      as2_msgs::msg::PlatformStatus::EMERGENCY});
   };
-
 };
 
-
-
-} //namespace as2
+}  //namespace as2
 
 #endif

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-set(PROJECT_NAME aerostack2_core)
+set(PROJECT_NAME as2_core)
 project(${PROJECT_NAME})
 
 # Default to C++14
@@ -7,13 +7,19 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+# set Release as default
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(aerostack2_msgs REQUIRED)
+find_package(as2_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
@@ -39,28 +45,31 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
-ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs std_srvs sensor_msgs nav_msgs aerostack2_msgs geometry_msgs)
+ament_target_dependencies(${PROJECT_NAME} rclcpp std_msgs std_srvs sensor_msgs nav_msgs as2_msgs geometry_msgs)
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   ament_cmake
-  rclcpp std_msgs std_srvs sensor_msgs nav_msgs aerostack2_msgs geometry_msgs
+  rclcpp std_msgs std_srvs sensor_msgs nav_msgs as2_msgs geometry_msgs
   )
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 
-add_executable(platform_state_machine_test tests/platform_state_machine_test.cpp src/platform_state_machine.cpp)
-target_link_libraries(platform_state_machine_test ${PROJECT_NAME}) 
+# add_executable(platform_state_machine_test tests/platform_state_machine_test.cpp src/platform_state_machine.cpp)
+# target_link_libraries(platform_state_machine_test ${PROJECT_NAME}) 
 
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_cpplint REQUIRED)
+  # find_package(ament_cmake_cpplint REQUIRED)
   find_package(ament_cmake_cppcheck REQUIRED)
   find_package(ament_cmake_clang_format REQUIRED)
   
-  ament_cpplint(src/ include/)
+  # ament_cpplint(src/ include/)
   ament_cppcheck(src/ include/)
   ament_clang_format(src/ include/)
+
+  include(./tests/CMakeLists.txt)
+
 endif()
 
 

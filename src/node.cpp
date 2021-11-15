@@ -30,10 +30,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************************************************************************/
 
-#include "aerostack2_core/node.hpp"
+#include "as2_core/node.hpp"
 
-
-std::string aerostack2::Node::generate_global_name(const std::string & name){
+std::string as2::Node::generate_global_name(const std::string & name)
+{
   if (name.find("/") == 0) {
     return name.substr(1);
   } else {
@@ -41,8 +41,7 @@ std::string aerostack2::Node::generate_global_name(const std::string & name){
   }
 };
 
-
-std::string aerostack2::Node::generate_local_name(const std::string & name)
+std::string as2::Node::generate_local_name(const std::string & name)
 {
   if (name.find("/") == 0) {
     return this->get_name() + name;
@@ -50,4 +49,3 @@ std::string aerostack2::Node::generate_local_name(const std::string & name)
     return std::string(this->get_name()) + "/" + name;
   }
 };
-

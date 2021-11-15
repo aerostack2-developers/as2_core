@@ -8,28 +8,27 @@
 #include <memory>
 #include <string>
 
-#include "node.hpp"
 #include "aerial_platform.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "node.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 // TODO ADD CAMERA SUPPORT
 
-namespace aerostack2
+namespace as2
 {
 class GenericSensor
 {
 public:
-  GenericSensor(const std::string & id, aerostack2::Node * node_ptr)
-  : sensor_id_(id), node_ptr_(node_ptr)
+  GenericSensor(const std::string & id, as2::Node * node_ptr) : sensor_id_(id), node_ptr_(node_ptr)
   {
     topic_name_ = std::string(node_ptr->get_name()) + "/" + sensor_id_;
   }
 
 protected:
   std::string topic_name_;
-  aerostack2::Node * node_ptr_ = nullptr;
+  as2::Node * node_ptr_ = nullptr;
 
 private:
   std::string sensor_id_;
@@ -48,7 +47,7 @@ template <typename T>
 class Sensor : public GenericSensor
 {
 public:
-  Sensor(const std::string & id, aerostack2::Node * node_ptr) : GenericSensor(id, node_ptr)
+  Sensor(const std::string & id, as2::Node * node_ptr) : GenericSensor(id, node_ptr)
   {
     sensor_publisher_ = node_ptr_->create_publisher<T>(this->topic_name_, 10);
   }
@@ -61,5 +60,5 @@ private:
 
 };  //class Sensor
 
-};      // namespace aerostack2
+};      // namespace as2
 #endif  //AEROSTACK2_NODE_HPP_

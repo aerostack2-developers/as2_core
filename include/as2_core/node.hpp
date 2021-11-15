@@ -38,13 +38,12 @@
 #include <memory>
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
+#include "naming.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
+#include "rclcpp/rclcpp.hpp"
 
-#include "naming.hpp"
-
-namespace aerostack2
+namespace as2
 {
 /**
  * @brief Basic Aerostack2 Node, it heritages all the functionality of an rclcpp::Node
@@ -75,9 +74,8 @@ public:
    * @return std::string result name
    */
   std::string generate_global_name(const std::string & name);
-
 };
 
-}  // namespace aerostack2
+}  // namespace as2
 
 #endif  //AEROSTACK2_NODE_HPP_
