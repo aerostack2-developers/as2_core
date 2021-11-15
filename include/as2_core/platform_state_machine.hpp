@@ -7,7 +7,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -16,7 +16,7 @@
  * 3. Neither the name of the copyright holder nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -33,18 +33,26 @@
 #ifndef AEROSTACK2_PLATFORM_STATE_MACHINE_HPP_
 #define AEROSTACK2_PLATFORM_STATE_MACHINE_HPP_
 
+#include <functional>
 #include <string>
 #include <vector>
 
 #include "as2_core/node.hpp"
+#include "as2_msgs/msg/platform_state_machine_event.hpp"
 #include "as2_msgs/msg/platform_status.hpp"
+#include "as2_msgs/srv/set_platform_state_machine_event.hpp"
 
 namespace as2
 {
 /**
- * @brief Data Structure for defining the state machine transitions.
+ * @brief Event type.
+ * 
  */
+using Event = as2_msgs::msg::PlatformStateMachineEvent;
 
+/**
+   * @brief Data Structure for defining the state machine transitions.
+   */
 struct StateMachineTransition
 {
   std::string transition_name;
@@ -54,167 +62,84 @@ struct StateMachineTransition
 };
 
 /**
- * @brief This class implements the Platform State Machine,
- * which is in charge of handling the state of the platform using a FSM (Finite State Machine).
- * This state machine consist on 6 states:
- *   - DISARMED -> The platform is not armed.
- *   - LANDED -> The platform is armed and landed.
- *   - TAKING_OFF -> The platform is taking off.
- *   - FLYING -> The platform is on air.
- *   - LANDING -> The platform is landing.
- *   - EMERGENCY -> The platform is in emergency mode.
- * 
- * The events that can trigger the state machine are:
- *   - ARM 
- *   - DISARM
- *   - TAKE_OFF
- *   - TOOK_OFF
- *   - LAND
- *   - LANDED
- *   - EMERGENCY
- *  TODO: add figure of the state machine
- */
+   * @brief This class implements the Platform State Machine,
+   * which is in charge of handling the state of the platform using a FSM (Finite State Machine).
+   * This state machine consist on 6 states:
+   *   - DISARMED -> The platform is not armed.
+   *   - LANDED -> The platform is armed and landed.
+   *   - TAKING_OFF -> The platform is taking off.
+   *   - FLYING -> The platform is on air.
+   *   - LANDING -> The platform is landing.
+   *   - EMERGENCY -> The platform is in emergency mode.
+   *
+   * The events that can trigger the state machine are:
+   *   - ARM
+   *   - DISARM
+   *   - TAKE_OFF
+   *   - TOOK_OFF
+   *   - LAND
+   *   - LANDED
+   *   - EMERGENCY
+   *  TODO: add figure of the state machine
+   *  \image html test.jpg
+   */
 
 class PlatformStateMachine
 {
 public:
-  enum Event {
-    ARM,
-    DISARM,
-    TAKE_OFF,
-    TOOK_OFF,
-    LAND,
-    LANDED,
-    EMERGENCY,
-  };
-
-public:
   /**
-   * @brief Constructor of the Platform State Machine.
-   * @param node_ptr Pointer to an aerostack2 node.
-   */
-  PlatformStateMachine()
-  {
-    state_.state = as2_msgs::msg::PlatformStatus::DISARMED;
-    defineTransitions();
-  };
-  // PlatformStateMachine(as2::Node* node){
-  //   state_.state = as2_msgs::msg::PlatformStatus::DISARMED;
-  // };
-  ~PlatformStateMachine(){};
+     * @brief Constructor of the Platform State Machine.
+     * @param node_ptr Pointer to an aerostack2 node.
+     */
+  PlatformStateMachine(as2::Node * node);
+  ~PlatformStateMachine();
 
   /**
-   * @brief This function is in charge of handling the state machine.
-   * @param event The event that triggers the state machine.
-   */
-  void processEvent(const Event & event)
-  {
-    // Get the current state
-    int8_t current_state = state_.state;
-
-    // Get the transition that matches the current state and the event
-    StateMachineTransition transition = getTransition(current_state, event);
-
-    // If the transition is valid, change the state
-    if (transition.transition_id != -1) {
-      state_.state = transition.to_state_id;
-      RCLCPP_INFO(rclcpp::get_logger("FSM transition"), transition.transition_name);
-    }
-  };
+     * @brief This function is in charge of handling the state machine.
+     * @param event The event that triggers the state machine.
+     */
+  void processEvent(const int8_t & event);
+  /**
+     * @brief This function is in charge of handling the state machine.
+     * @param event The event that triggers the state machine.
+     */
+  void processEvent(const Event & event);
 
   /**
-   * @brief Get the Transition object
-   * 
-   * @param current_state 
-   * @param event 
-   * @return StateMachineTransition 
-   */
-  StateMachineTransition getTransition(int8_t current_state, const Event & event)
-  {
-    StateMachineTransition transition;
-    transition.transition_id = -1;
-    for (int i = 0; i < transitions_.size(); i++) {
-      if (
-        transitions_[i].from_state_id == current_state && transitions_[i].transition_id == event) {
-        transition = transitions_[i];
-        break;
-      }
-    }
-    return transition;
-  };
+     * @brief Get the Transition object
+     *
+     * @param current_state
+     * @param event
+     * @return StateMachineTransition
+     */
+  StateMachineTransition getTransition(const int8_t & current_state, const int8_t & event);
 
   /**
-   * @brief This function returns the current state of the state machine
-   * @return The current Platform Status of the state machine
-   */
-  as2_msgs::msg::PlatformStatus getState() { return state_; };
-  void setState(as2_msgs::msg::PlatformStatus state) { state_ = state; };
-  void setState(const int8_t & state) { state_.state = state; };
+     * @brief This function returns the current state of the state machine
+     * @return The current Platform Status of the state machine
+     */
+  inline as2_msgs::msg::PlatformStatus getState() { return state_; };
+  inline void setState(as2_msgs::msg::PlatformStatus state) { state_ = state; };
+  inline void setState(const int8_t & state) { state_.state = state; };
 
 private:
   std::vector<StateMachineTransition> transitions_;
   as2_msgs::msg::PlatformStatus state_;
+  as2::Node * node_ptr_;
 
   /**
-   * @brief in this function the state machine is created based on the transitions.
-   * its called in the constructor of the class.
-   */
-  void defineTransitions()
-  {
-    transitions_.clear();
-    transitions_.reserve(11);
+     * @brief in this function the state machine is created based on the transitions.
+     * its called in the constructor of the class.
+     */
+  void defineTransitions();
 
-    // INTIAL_STATE -> [TRANSITION] -> FINAL_STATE
+  rclcpp::Service<as2_msgs::srv::SetPlatformStateMachineEvent>::SharedPtr state_machine_event_srv_;
 
-    // DISARMED -> [ARM] -> ARMED
-    transitions_.emplace_back(StateMachineTransition{
-      "ARM", as2_msgs::msg::PlatformStatus::DISARMED, Event::ARM,
-      as2_msgs::msg::PlatformStatus::LANDED});
-
-    // LANDED -> [DISARM] -> DISARMED
-    transitions_.emplace_back(StateMachineTransition{
-      "DISARM", as2_msgs::msg::PlatformStatus::LANDED, Event::DISARM,
-      as2_msgs::msg::PlatformStatus::DISARMED});
-
-    // LANDED -> [TAKE_OFF] -> TAKING_OFF
-    transitions_.emplace_back(StateMachineTransition{
-      "TAKE_OFF", as2_msgs::msg::PlatformStatus::LANDED, Event::TAKE_OFF,
-      as2_msgs::msg::PlatformStatus::TAKING_OFF});
-
-    // TAKING_OFF -> [TOOK_OFF] -> FLYING
-    transitions_.emplace_back(StateMachineTransition{
-      "TOOK_OFF", as2_msgs::msg::PlatformStatus::TAKING_OFF, Event::TOOK_OFF,
-      as2_msgs::msg::PlatformStatus::FLYING});
-
-    // FLYING -> [LAND] -> LANDING
-    transitions_.emplace_back(StateMachineTransition{
-      "LAND", as2_msgs::msg::PlatformStatus::FLYING, Event::LAND,
-      as2_msgs::msg::PlatformStatus::LANDING});
-
-    // LANDING -> [LANDED] -> LANDED
-    transitions_.emplace_back(StateMachineTransition{
-      "LANDED", as2_msgs::msg::PlatformStatus::LANDING, Event::LANDED,
-      as2_msgs::msg::PlatformStatus::LANDED});
-
-    // EMERGENCY TRANSITIONS
-    transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY", as2_msgs::msg::PlatformStatus::DISARMED, Event::EMERGENCY,
-      as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY", as2_msgs::msg::PlatformStatus::LANDED, Event::EMERGENCY,
-      as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY", as2_msgs::msg::PlatformStatus::TAKING_OFF, Event::EMERGENCY,
-      as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY", as2_msgs::msg::PlatformStatus::FLYING, Event::EMERGENCY,
-      as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-      "EMERGENCY", as2_msgs::msg::PlatformStatus::LANDING, Event::EMERGENCY,
-      as2_msgs::msg::PlatformStatus::EMERGENCY});
-  };
+  void setStateMachineEventSrvCallback(
+    const std::shared_ptr<as2_msgs::srv::SetPlatformStateMachineEvent::Request> request,
+    std::shared_ptr<as2_msgs::srv::SetPlatformStateMachineEvent::Response> response);
 };
 
-}  //namespace as2
+}  // namespace as2
 
 #endif
