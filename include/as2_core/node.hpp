@@ -38,7 +38,6 @@
 #include <memory>
 #include <string>
 
-#include "naming.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
 #include "rclcpp/rclcpp.hpp"
