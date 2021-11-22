@@ -1,4 +1,34 @@
-// "Copyright [year] <Copyright Owner>"
+/*!*******************************************************************************************
+ *  \file       aerial_platform.cpp
+ *  \brief      Aerostack2 Aerial Platformm class implementation file.
+ *  \authors    Miguel Fernandez Cortizas
+ *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
+ *              All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ********************************************************************************/
 
 #include "aerial_platform.hpp"
 
@@ -6,8 +36,11 @@ using namespace as2::names;
 
 namespace as2
 {
-AerialPlatform::AerialPlatform() : as2::Node(std::string("platform"))
+AerialPlatform::AerialPlatform()
+: as2::Node(std::string("platform")), state_machine_(as2::PlatformStateMachine(this))
 {
+  state_machine_ = as2::PlatformStateMachine(this);
+
   this->declare_parameter<bool>("simulation_mode", false);
   this->declare_parameter<float>("mass", 1.0);
   this->declare_parameter<float>("max_thrust", 0.0);
@@ -24,26 +57,22 @@ AerialPlatform::AerialPlatform() : as2::Node(std::string("platform"))
     RCLCPP_INFO(this->get_logger(), "max_thrust: %.2f N", parameters_.max_thrust);
   }
 
-  pose_command_sub_ =
-    this->create_subscription<global_topics::actuator_commands::POSE_COMMAND_TYPE>(
-      this->generate_global_name(global_topics::actuator_commands::POSE_COMMAND), 10,
-      [this](const global_topics::actuator_commands::POSE_COMMAND_TYPE::ConstSharedPtr msg) {
-        this->command_pose_msg_ = *msg.get();
-      });
+  pose_command_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+    this->generate_global_name(global_topics::actuator_commands::POSE_COMMAND), 10,
+    [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) {
+      this->command_pose_msg_ = *msg.get();
+    });
 
-  twist_command_sub_ =
-    this->create_subscription<global_topics::actuator_commands::TWIST_COMMAND_TYPE>(
-      this->generate_global_name(global_topics::actuator_commands::TWIST_COMMAND), 10,
-      [this](const global_topics::actuator_commands::TWIST_COMMAND_TYPE::ConstSharedPtr msg) {
-        this->command_twist_msg_ = *msg.get();
-      });
-
-  thrust_command_sub_ =
-    this->create_subscription<global_topics::actuator_commands::THRUST_COMMAND_TYPE>(
-      this->generate_global_name(global_topics::actuator_commands::THRUST_COMMAND), 10,
-      [this](const global_topics::actuator_commands::THRUST_COMMAND_TYPE::ConstSharedPtr msg) {
-        this->command_thrust_msg_ = *msg.get();
-      });
+  twist_command_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
+    this->generate_global_name(global_topics::actuator_commands::TWIST_COMMAND), 10,
+    [this](const geometry_msgs::msg::TwistStamped::ConstSharedPtr msg) {
+      this->command_twist_msg_ = *msg.get();
+    });
+  thrust_command_sub_ = this->create_subscription<as2_msgs::msg::Thrust>(
+    this->generate_global_name(global_topics::actuator_commands::THRUST_COMMAND), 10,
+    [this](const as2_msgs::msg::Thrust::ConstSharedPtr msg) {
+      this->command_thrust_msg_ = *msg.get();
+    });
 
   set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetPlatformControlMode>(
     this->generate_global_name("/set_platform_control_mode"),
@@ -67,66 +96,64 @@ AerialPlatform::AerialPlatform() : as2::Node(std::string("platform"))
                            std::placeholders::_2   // Corresponds to the 'response' input
                            ));
 
-  platform_info_pub_ = this->create_publisher<global_topics::platform::PLATFORM_STATUS_TYPE>(
+  platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
     this->generate_global_name(global_topics::platform::PLATFORM_STATUS), 10);
 
-  // FIXME: Frecuency is hardcoded!!
-  platform_state_timer_ = this->create_wall_timer(
-    std::chrono::milliseconds(100), std::bind(&AerialPlatform::setPlatformInfo, this));
-
-  // // TODO: remove timer_test
-  //  static auto timer_test = this->create_wall_timer(std::chrono::milliseconds(1000), [this]() {
-  //    std::cout << "simulation mode = " << this->simulation_mode_enabled_ << std::endl;
-  //  });
-
-  // FIXME: rethink this function
-  //  static auto timer_commands_ = this->create_wall_timer(std::chrono::milliseconds(10), [this]() {
-  //    if (this->sending_commands_){
-  //      this->sendCommand();
-  //    }
-  //  });
+  platform_info_timer_ = this->create_wall_timer(
+    std::chrono::milliseconds((int64_t)(1000.0f / AS2_PLATFORM_INFO_PUB_FREQ_HZ)),
+    std::bind(&AerialPlatform::publishPlatformInfo, this));
 };
 
 bool AerialPlatform::setArmingState(bool state)
 {
-  if (state == platform_info_.armed && state == true) {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already armed");
-  } else if (state == platform_info_.armed && state == false) {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already disarmed");
+  if (state == platform_info_msg_.armed && state == true) {
+    RCLCPP_INFO(this->get_logger(), "UAV is already armed");
+  } else if (state == platform_info_msg_.armed && state == false) {
+    RCLCPP_INFO(this->get_logger(), "UAV is already disarmed");
   } else {
-    return ownSetArmingState(state);
+    if (ownSetArmingState(state)) {
+      platform_info_msg_.armed = state;
+      if (state) {
+        handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::ARM);
+      } else {
+        handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::DISARM);
+      }
+      return true;
+    }
   }
   return false;
 };
 
 bool AerialPlatform::setOffboardControl(bool offboard)
 {
-  if (offboard == platform_info_.offboard && offboard == true) {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already in OFFBOARD mode");
-  } else if (offboard == platform_info_.offboard && offboard == false) {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "UAV is already in MANUAL mode");
+  if (offboard == platform_info_msg_.offboard && offboard == true) {
+    RCLCPP_INFO(this->get_logger(), "UAV is already in OFFBOARD mode");
+  } else if (offboard == platform_info_msg_.offboard && offboard == false) {
+    RCLCPP_INFO(this->get_logger(), "UAV is already in MANUAL mode");
   } else {
-    return ownSetOffboardControl(offboard);
+    if (ownSetOffboardControl(offboard)) {
+      platform_info_msg_.offboard = offboard;
+      return true;
+    }
   }
   return false;
 };
 
-as2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
-{
-  platform_info_ = *(ownSetPlatformInfo().get());
-  publishPlatformInfo();
-  return platform_info_;
-};
+// as2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
+// {
+//   platform_info_msg_ = *(ownSetPlatformInfo().get());
+//   return platform_info_msg_;
+// };
 
 bool AerialPlatform::setPlatformControlMode(const as2_msgs::msg::PlatformControlMode & msg)
 {
-  control_mode_settled_ = ownSetPlatformControlMode(msg);
-  return control_mode_settled_;
+  return ownSetPlatformControlMode(msg);
 };
+
 bool AerialPlatform::sendCommand()
 {
-  if (!control_mode_settled_) {
-    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "ERROR: Platform control mode is not settled yet");
+  if (!isControlModeSettled()) {
+    RCLCPP_ERROR(this->get_logger(), "ERROR: Platform control mode is not settled yet");
     return false;
   } else {
     return ownSendCommand();
@@ -140,22 +167,22 @@ void AerialPlatform::setPlatformControlModeSrvCall(
   std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Response> response)
 {
   bool success = this->setPlatformControlMode(request->control_mode);
+  response->success = success;
   if (!success) {
     RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO SET THIS CONTROL MODE TO THIS PLATFORM");
+  } else {
+    platform_info_msg_.current_control_mode = request->control_mode;
   }
-  sending_commands_ = success;
-  response->success = success;
 };
 
 void AerialPlatform::setOffboardModeSrvCall(
   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
   std::shared_ptr<std_srvs::srv::SetBool::Response> response)
 {
-  bool success = setOffboardControl(request->data);
-  // FIXME: Adapt this for px4
-  control_mode_settled_ = success;
-  sending_commands_ = success;
-  response->success = success;
+  response->success = setOffboardControl(request->data);
+  if (response->success) {
+    platform_info_msg_.offboard = request->data;
+  }
 }
 
 void AerialPlatform::setArmingStateSrvCall(
@@ -163,9 +190,9 @@ void AerialPlatform::setArmingStateSrvCall(
   std::shared_ptr<std_srvs::srv::SetBool::Response> response)
 {
   response->success = setArmingState(request->data);
+  if (response->success) {
+    platform_info_msg_.armed = request->data;
+  }
 }
-
-// Publish Functions
-void AerialPlatform::publishPlatformInfo() { platform_info_pub_->publish(platform_info_); }
 
 };  // namespace as2

@@ -43,13 +43,12 @@ PlatformStateMachine::PlatformStateMachine(as2::Node * node) : node_ptr_(node)
   state_machine_event_srv_ = node_ptr_->create_service<as2_msgs::srv::SetPlatformStateMachineEvent>(
     node_ptr_->generate_local_name("state_machine_event"),
     std::bind(
-      &PlatformStateMachine::setStateMachineEventSrvCallback, this, 
-      std::placeholders::_1,
+      &PlatformStateMachine::setStateMachineEventSrvCallback, this, std::placeholders::_1,
       std::placeholders::_2));
 };
 PlatformStateMachine::~PlatformStateMachine(){};
 
-void PlatformStateMachine::processEvent(const int8_t & event)
+bool PlatformStateMachine::processEvent(const int8_t & event)
 {
   // Get the current state
   int8_t current_state = state_.state;
@@ -58,15 +57,20 @@ void PlatformStateMachine::processEvent(const int8_t & event)
   StateMachineTransition transition = getTransition(current_state, event);
 
   // If the transition is valid, change the state
-  if (transition.transition_id != -11) {
-    state_.state = transition.to_state_id;
-    RCLCPP_INFO(
-      rclcpp::get_logger("FSM transition"), "Transition [%s] : New State [%d]",
-      transition.transition_name.c_str(), transition.to_state_id);
+  if (transition.transition_id == -11) {
+    RCLCPP_WARN(node_ptr_->get_logger(), "Invalid transition: %d -> %d", current_state, event);
+    return false;
   }
+
+  state_.state = transition.to_state_id;
+  RCLCPP_INFO(
+    node_ptr_->get_logger(), "Transition [%s] : New State [%d]", transition.transition_name.c_str(),
+    transition.to_state_id);
+
+  return true;
 }
 
-void PlatformStateMachine::processEvent(const Event & event) { processEvent(event.event); };
+bool PlatformStateMachine::processEvent(const Event & event) { return processEvent(event.event); };
 
 StateMachineTransition PlatformStateMachine::getTransition(
   const int8_t & current_state, const int8_t & event)

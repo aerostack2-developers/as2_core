@@ -23,7 +23,6 @@ using POSE_COMMAND_TYPE = geometry_msgs::msg::PoseStamped;
 
 const std::string TWIST_COMMAND = "actuator_command/twist";
 using TWIST_COMMAND_TYPE = geometry_msgs::msg::TwistStamped;
-
 const std::string THRUST_COMMAND = "actuator_command/thrust";
 using THRUST_COMMAND_TYPE = as2_msgs::msg::Thrust;
 

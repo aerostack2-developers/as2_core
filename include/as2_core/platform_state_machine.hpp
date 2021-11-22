@@ -97,13 +97,15 @@ public:
   /**
      * @brief This function is in charge of handling the state machine.
      * @param event The event that triggers the state machine.
+     * @return true If the event is valid in current State.
      */
-  void processEvent(const int8_t & event);
+  bool processEvent(const int8_t & event);
   /**
      * @brief This function is in charge of handling the state machine.
      * @param event The event that triggers the state machine.
+     * @return true If the event is valid in current State.
      */
-  void processEvent(const Event & event);
+  bool processEvent(const Event & event);
 
   /**
      * @brief Get the Transition object
@@ -119,6 +121,11 @@ public:
      * @return The current Platform Status of the state machine
      */
   inline as2_msgs::msg::PlatformStatus getState() { return state_; };
+
+  /**
+   * @brief Set the State of the FSM to the desired state. (THIS MAY BE USED ONLY FOR TESTING PURPOSES)
+   * @param state 
+   */
   inline void setState(as2_msgs::msg::PlatformStatus state) { state_ = state; };
   inline void setState(const int8_t & state) { state_.state = state; };
 

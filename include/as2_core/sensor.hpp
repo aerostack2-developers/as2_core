@@ -13,10 +13,16 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 // TODO ADD CAMERA SUPPORT
 
 namespace as2
+{
+namespace sensors
 {
 class GenericSensor
 {
@@ -60,5 +66,39 @@ private:
 
 };  //class Sensor
 
-};      // namespace as2
+class Camera : public GenericSensor
+{
+  Camera(const std::string & id, as2::Node * node_ptr) : GenericSensor(id, node_ptr)
+  {
+    image_publisher_ = node_ptr_->create_publisher<sensor_msgs::msg::Image>(this->topic_name_, 10);
+    camera_info_publisher_ =
+      node_ptr_->create_publisher<sensor_msgs::msg::CameraInfo>(this->topic_name_ + "/info", 10);
+  }
+
+  //TODO
+  void publishData(const sensor_msgs::msg::Image & msg)
+  {
+    this->image_publisher_->publish(msg);
+    this->camera_info_publisher_->publish(this->camera_info_data_);
+  }
+
+  void publishRectifiedImage(const sensor_msgs::msg::Image & msg){};
+  void publishCompressedImage(const sensor_msgs::msg::Image & msg){};
+
+private:
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher_;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_publisher_;
+
+  sensor_msgs::msg::Image image_data_;
+  sensor_msgs::msg::CameraInfo camera_info_data_;
+
+};  //class CameraSensor
+
+using Imu = Sensor<sensor_msgs::msg::Imu>;
+using GPS = Sensor<sensor_msgs::msg::NavSatFix>;
+using Lidar = Sensor<sensor_msgs::msg::LaserScan>;
+
+};  // namespace sensors
+};  // namespace as2
+
 #endif  //AEROSTACK2_NODE_HPP_
