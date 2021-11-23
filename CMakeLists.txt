@@ -38,6 +38,7 @@ set(SOURCE_CPP_FILES
   src/aerial_platform.cpp
   src/platform_state_machine.cpp
   src/utils.cpp
+  src/tf_utils.cpp
 )
 
 add_library(${PROJECT_NAME} ${SOURCE_CPP_FILES})
