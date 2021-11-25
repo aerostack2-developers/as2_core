@@ -43,7 +43,6 @@ AerialPlatform::AerialPlatform()
   platform_info_msg_.offboard = false;
   platform_info_msg_.connected = false;
   platform_info_msg_.current_control_mode.control_mode = as2_msgs::msg::PlatformControlMode::UNSET;
-  
 
   this->declare_parameter<bool>("simulation_mode", false);
   this->declare_parameter<float>("mass", 1.0);

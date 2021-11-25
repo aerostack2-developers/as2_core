@@ -18,7 +18,25 @@ endif(${Gtest_FOUND})
 include(GoogleTest)
 
 enable_testing()
-add_executable(platform_state_machine_test ./tests/platform_state_machine_test.cpp)
-target_link_libraries(platform_state_machine_test gtest_main ${PROJECT_NAME})
+# find all *.cpp files in the tests directory
 
-gtest_discover_tests(platform_state_machine_test)
+file(GLOB TEST_SOURCES tests/*.cpp )
+
+# create a test executable for each test file
+foreach(TEST_SOURCE ${TEST_SOURCES})
+
+  get_filename_component(_src_filename ${TEST_SOURCE} NAME)
+  string(LENGTH ${_src_filename} name_length)
+  math(EXPR final_length  "${name_length}-4") # remove .cpp of the name
+  string(SUBSTRING ${_src_filename} 0 ${final_length} TEST_NAME)
+  
+  add_executable(${TEST_NAME}_test ${TEST_SOURCE})
+  ament_target_dependencies(${TEST_NAME}_test  ${PROJECT_DEPENDENCIES})
+  target_link_libraries(${TEST_NAME}_test gtest_main ${PROJECT_NAME})
+
+  # add the test executable to the list of executables to build
+  gtest_discover_tests(${TEST_NAME}_test)
+
+  endforeach()
+
+

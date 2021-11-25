@@ -33,8 +33,6 @@
 #ifndef TF_UTILS_HPP_
 #define TF_UTILS_HPP_
 
-#include <string>
-
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
