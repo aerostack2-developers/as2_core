@@ -100,7 +100,7 @@ AerialPlatform::AerialPlatform()
                            ));
 
   platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
-    this->generate_global_name("platform/platform_status"), 10);
+    this->generate_global_name("platform/info"), 10);
 
   platform_info_timer_ = this->create_wall_timer(
     std::chrono::milliseconds((int64_t)(1000.0f / AS2_PLATFORM_INFO_PUB_FREQ_HZ)),
