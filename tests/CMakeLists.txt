@@ -29,10 +29,11 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
   string(LENGTH ${_src_filename} name_length)
   math(EXPR final_length  "${name_length}-4") # remove .cpp of the name
   string(SUBSTRING ${_src_filename} 0 ${final_length} TEST_NAME)
-
   
   add_executable(${TEST_NAME}_test ${TEST_SOURCE})
+  ament_target_dependencies(${TEST_NAME}_test  ${PROJECT_DEPENDENCIES})
   target_link_libraries(${TEST_NAME}_test gtest_main ${PROJECT_NAME})
+
   # add the test executable to the list of executables to build
   gtest_discover_tests(${TEST_NAME}_test)
 
