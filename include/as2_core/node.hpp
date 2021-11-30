@@ -73,6 +73,31 @@ public:
    * @return std::string result name
    */
   std::string generate_global_name(const std::string & name);
+
+  /**
+   * @brief Executes the main loop of the node
+   * 
+   * @param freq expecify the frequency of the main loop, if -1 the main loop will run as fast as possible
+   * @param run_function function to be executed in the main loop
+   */
+  void spinLoop(float freq = -1, std::function<void()> run_function = nullptr)
+  {
+    if (freq <= 0) {
+      rclcpp::spin(this->get_node_base_interface());
+      return;
+    }
+
+    rclcpp::Rate loop_rate(freq);
+    while (rclcpp::ok()) {
+      rclcpp::spin_some(this->get_node_base_interface());
+      if (run_function != nullptr) run_function();
+      if (!loop_rate.sleep()) {
+        // if sleep returns false, it means that loop rate cannot keep up with the desired rate
+        RCLCPP_INFO(
+          this->get_logger(), "Spin loop rate exceeded, stable frequency cannot be assured ");
+      }
+    }
+  }
 };
 
 }  // namespace as2
