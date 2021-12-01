@@ -46,7 +46,12 @@ set(SOURCE_CPP_FILES
   src/platform_state_machine.cpp
   src/utils.cpp
   src/tf_utils.cpp
+  src/rate.cpp
 )
+# set(INCLUDE_HPP_FILES 
+#   include/${PROJECT_NAME}/core_libs.hpp
+
+# )
 
 add_library(${PROJECT_NAME} ${SOURCE_CPP_FILES})
 target_include_directories(${PROJECT_NAME}

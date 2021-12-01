@@ -1,0 +1,1 @@
+#include "as2_core/rate.hpp"

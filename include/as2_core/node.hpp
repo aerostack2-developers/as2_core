@@ -34,10 +34,12 @@
 #define AEROSTACK2_NODE_HPP_
 
 #include <chrono>
+#include <exception>
 #include <functional>
 #include <memory>
 #include <string>
 
+#include "as2_core/rate.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -56,7 +58,16 @@ public:
    * 
    * @param name Node name
    */
-  Node(const std::string & name) : rclcpp::Node(name){};
+  Node(const std::string & name) : rclcpp::Node(name)
+  {
+    this->declare_parameter<float>("node_frequency", -1.0);
+    this->get_parameter("node_frequency", loop_frequency_);
+    RCLCPP_INFO(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
+
+    if (loop_frequency_ > 0.0) {
+      loop_rate_ptr_ = std::make_shared<Rate>(loop_frequency_);
+    }
+  };
 
   /**
    * @brief transform an string into local topic name inside drone namespace and node namespace
@@ -74,32 +85,51 @@ public:
    */
   std::string generate_global_name(const std::string & name);
 
+private:
   /**
-   * @brief Executes the main loop of the node
-   * 
-   * @param freq expecify the frequency of the main loop, if -1 the main loop will run as fast as possible
-   * @param run_function function to be executed in the main loop
+   * @brief frequency of the spin cycle of the node
    */
-  void spinLoop(float freq = -1, std::function<void()> run_function = nullptr)
-  {
-    if (freq <= 0) {
-      rclcpp::spin(this->get_node_base_interface());
-      return;
-    }
+  double loop_frequency_;
+  std::shared_ptr<as2::Rate> loop_rate_ptr_;
 
-    rclcpp::Rate loop_rate(freq);
-    while (rclcpp::ok()) {
-      rclcpp::spin_some(this->get_node_base_interface());
-      if (run_function != nullptr) run_function();
-      if (!loop_rate.sleep()) {
-        // if sleep returns false, it means that loop rate cannot keep up with the desired rate
-        RCLCPP_INFO(
-          this->get_logger(), "Spin loop rate exceeded, stable frequency cannot be assured ");
-      }
+public:
+  /**
+   * @brief sleeps the node to ensure node_frecuency desired 
+   * 
+   * @return true the node is sleeping
+   * @return false the node is not sleeping, this means that desired frequency is not reached
+   */
+  bool sleep()
+  {
+    if (loop_rate_ptr_) {
+      return loop_rate_ptr_->sleep();
+    } else {
+      throw std::runtime_error("Node::sleep() called but no node_frequency defined");
+      return false;
+    };
+  };
+  /**
+   * @brief Get the loop frequency object 
+   * 
+   * @return double frequency in Hz
+   */
+  inline double get_loop_frequency() { return loop_frequency_; }
+
+  bool preset_loop_frequency(double frequency)
+  {
+    if (frequency <= 0) return true;  // default frequency is -1
+    if (loop_rate_ptr_) {
+      RCLCPP_INFO(
+        this->get_logger(), "Preset Loop Frequency [%d Hz] was overwrite to launcher params to %d",
+        (int)frequency, (int)loop_frequency_);
+      return false;
     }
-  }
+    loop_frequency_ = frequency;
+    loop_rate_ptr_ = std::make_shared<Rate>(loop_frequency_);
+    return true;
+  };
 };
 
 }  // namespace as2
 
-#endif  //AEROSTACK2_NODE_HPP_
+#endif  // AEROSTACK2_NODE_HPP_
