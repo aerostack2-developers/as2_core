@@ -23,6 +23,7 @@ set(PROJECT_DEPENDENCIES
   as2_msgs
   std_srvs
   geometry_msgs
+  gps_utils
 )
 
 foreach(DEPENDENCY ${PROJECT_DEPENDENCIES})
