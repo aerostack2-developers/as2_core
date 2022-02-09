@@ -18,6 +18,7 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
+#include "GpsUtils.hpp"
 
 // TODO ADD CAMERA SUPPORT
 
@@ -95,8 +96,58 @@ private:
 
 };  //class CameraSensor
 
+class GPS: public GenericSensor {
+private:
+  rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr fix_publisher_;
+  sensor_msgs::msg::NavSatFix fix_data_;
+  GpsUtils utils_;
+  rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr sub_;  // TODO cosas feas 
+
+public:
+  GPS(const std::string &id, as2::Node *node_ptr): GenericSensor(id, node_ptr) {
+    fix_publisher_ = node_ptr_->create_publisher<sensor_msgs::msg::NavSatFix>(this->topic_name_, 10);
+    this->setOrigin();
+  }
+
+  void publishData(const sensor_msgs::msg::NavSatFix &msg){
+    this->fix_publisher_->publish(msg);
+  }
+
+private:
+  void fixCb(const sensor_msgs::msg::NavSatFix::SharedPtr msg) {  // TODO cosas feas
+    if (msg->status.status >= 0) {
+      std::vector<rclcpp::Parameter> params = {rclcpp::Parameter(this->topic_name_ + "/origin/lat", msg->latitude), 
+                                               rclcpp::Parameter(this->topic_name_ + "/origin/lon", msg->longitude), 
+                                               rclcpp::Parameter(this->topic_name_ + "/origin/alt", msg->altitude)};
+      node_ptr_->set_parameters(params);
+      sub_.reset();  // unsubcribe after receiving first valid msg
+      this->setOrigin();
+    }
+  }
+
+  void setOrigin() {
+    double lat0, lon0, h0;  // origin
+    bool is_lat = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/lat", lat0, 0.0);
+    bool is_lon = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/lon", lon0, 0.0);
+    bool is_alt = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/alt", h0, 0.0);
+    if (is_lat && is_lon) {
+      this->utils_.SetOrigin(lat0, lon0, h0);
+      double x, y, z;
+      this->utils_.LatLon2Ecef(lat0, lon0, h0, x, y, z);
+      std::vector<rclcpp::Parameter> params = {rclcpp::Parameter(this->topic_name_ + "/origin/ecef/x", x), 
+                                               rclcpp::Parameter(this->topic_name_ + "/origin/ecef/y", y), 
+                                               rclcpp::Parameter(this->topic_name_ + "/origin/ecef/z", z)};
+      node_ptr_->set_parameters(params);
+    } else {
+      sub_ = node_ptr_->create_subscription<sensor_msgs::msg::NavSatFix>(this->topic_name_, 1,
+       std::bind(&GPS::fixCb, this, std::placeholders::_1));
+    }
+    // ROS2 Galactic --> https://docs.ros.org/en/galactic/Tutorials/Monitoring-For-Parameter-Changes-CPP.html
+  }
+
+};  // class GPS
+
 using Imu = Sensor<sensor_msgs::msg::Imu>;
-using GPS = Sensor<sensor_msgs::msg::NavSatFix>;
 using Lidar = Sensor<sensor_msgs::msg::LaserScan>;
 
 };  // namespace sensors
