@@ -7,6 +7,9 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
+#include <algorithm>
+#include <exception>
 
 #include "aerial_platform.hpp"
 #include "node.hpp"
@@ -99,14 +102,21 @@ private:
 class GPS: public GenericSensor {
 private:
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr fix_publisher_;
-  sensor_msgs::msg::NavSatFix fix_data_;
   GpsUtils utils_;
-  rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr sub_;  // TODO cosas feas 
 
 public:
   GPS(const std::string &id, as2::Node *node_ptr): GenericSensor(id, node_ptr) {
     fix_publisher_ = node_ptr_->create_publisher<sensor_msgs::msg::NavSatFix>(this->topic_name_, 10);
-    this->setOrigin();
+
+    double lat0, lon0, h0;  // origin
+    bool is_lat = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/lat", lat0, 0.0);
+    bool is_lon = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/lon", lon0, 0.0);
+    bool is_alt = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/alt", h0, 0.0);
+    if (is_lat && is_lon) {
+      this->setOrigin(lat0, lon0, h0);
+    } else {
+      node_ptr_->set_on_parameters_set_callback(std::bind(&GPS::paramsCb, this, std::placeholders::_1));
+    } // ROS2 Galactic --> https://docs.ros.org/en/galactic/Tutorials/Monitoring-For-Parameter-Changes-CPP.html
   }
 
   void publishData(const sensor_msgs::msg::NavSatFix &msg){
@@ -114,35 +124,37 @@ public:
   }
 
 private:
-  void fixCb(const sensor_msgs::msg::NavSatFix::SharedPtr msg) {  // TODO cosas feas
-    if (msg->status.status >= 0) {
-      std::vector<rclcpp::Parameter> params = {rclcpp::Parameter(this->topic_name_ + "/origin/lat", msg->latitude), 
-                                               rclcpp::Parameter(this->topic_name_ + "/origin/lon", msg->longitude), 
-                                               rclcpp::Parameter(this->topic_name_ + "/origin/alt", msg->altitude)};
-      node_ptr_->set_parameters(params);
-      sub_.reset();  // unsubcribe after receiving first valid msg
-      this->setOrigin();
-    }
-  }
+    rcl_interfaces::msg::SetParametersResult paramsCb(const std::vector<rclcpp::Parameter> & parameters) { 
+      rcl_interfaces::msg::SetParametersResult result;
+      result.successful = true;
 
-  void setOrigin() {
-    double lat0, lon0, h0;  // origin
-    bool is_lat = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/lat", lat0, 0.0);
-    bool is_lon = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/lon", lon0, 0.0);
-    bool is_alt = node_ptr_->get_parameter_or(this->topic_name_ + "/origin/alt", h0, 0.0);
-    if (is_lat && is_lon) {
-      this->utils_.SetOrigin(lat0, lon0, h0);
-      double x, y, z;
-      this->utils_.LatLon2Ecef(lat0, lon0, h0, x, y, z);
-      std::vector<rclcpp::Parameter> params = {rclcpp::Parameter(this->topic_name_ + "/origin/ecef/x", x), 
-                                               rclcpp::Parameter(this->topic_name_ + "/origin/ecef/y", y), 
-                                               rclcpp::Parameter(this->topic_name_ + "/origin/ecef/z", z)};
-      node_ptr_->set_parameters(params);
-    } else {
-      sub_ = node_ptr_->create_subscription<sensor_msgs::msg::NavSatFix>(this->topic_name_, 1,
-       std::bind(&GPS::fixCb, this, std::placeholders::_1));
+      auto is_lat = [](rclcpp::Parameter param) { return param.get_name().find("/origin/lat") != std::string::npos; };
+      auto is_lon = [](rclcpp::Parameter param) { return param.get_name().find("/origin/lon") != std::string::npos; };
+      auto is_h = [](rclcpp::Parameter param) { return param.get_name().find("/origin/alt") != std::string::npos; };
+      auto lat_ptr = std::find_if(begin(parameters), end(parameters), is_lat);
+      auto lon_ptr = std::find_if(begin(parameters), end(parameters), is_lon);
+      auto h_ptr = std::find_if(begin(parameters), end(parameters), is_h);
+
+      if (lat_ptr != parameters.end() && lon_ptr != parameters.end()) {
+        double h;
+        (h_ptr != parameters.end()) ? h = h_ptr->get_value<double>() : h = 0.0;
+          try {
+            setOrigin(lat_ptr->get_value<double>(), lon_ptr->get_value<double>(), h);
+          } catch (std::exception &e) {
+            RCLCPP_WARN(node_ptr_->get_logger(), e.what());
+          }
+      }
+      return result;
     }
-    // ROS2 Galactic --> https://docs.ros.org/en/galactic/Tutorials/Monitoring-For-Parameter-Changes-CPP.html
+
+  void setOrigin(double lat, double lon, double h) {
+    this->utils_.SetOrigin(lat, lon, h);
+    double x, y, z;
+    GpsUtils::LatLon2Ecef(lat, lon, h, x, y, z);
+    std::vector<rclcpp::Parameter> params = {rclcpp::Parameter(this->topic_name_ + "/origin/ecef/x", x), 
+                                             rclcpp::Parameter(this->topic_name_ + "/origin/ecef/y", y), 
+                                             rclcpp::Parameter(this->topic_name_ + "/origin/ecef/z", z)};
+    node_ptr_->set_parameters(params);
   }
 
 };  // class GPS
