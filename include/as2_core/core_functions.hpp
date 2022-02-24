@@ -13,7 +13,7 @@ namespace as2
  * @brief Executes the main loop of the node
  * 
  * @param node node to execute the main loop
- * @param run_function function to be executed in the main loop
+ * @param run_function function to be executed in the main loop. Node frequency must be higher than 0
  */
 
 void spinLoop(std::shared_ptr<as2::Node> node, std::function<void()> run_function = nullptr)
@@ -28,10 +28,10 @@ void spinLoop(std::shared_ptr<as2::Node> node, std::function<void()> run_functio
     if (run_function != nullptr) run_function();
     if (!node->sleep()) {
       // if sleep returns false, it means that loop rate cannot keep up with the desired rate
-      RCLCPP_INFO(
-        node->get_logger(),
-        "Spin loop rate exceeded, stable frequency [%.3f Hz] cannot be assured ",
-        node->get_loop_frequency());
+      // RCLCPP_INFO(
+      //   node->get_logger(),
+      //   "Spin loop rate exceeded, stable frequency [%.3f Hz] cannot be assured ",
+      //   node->get_loop_frequency());
     }
   }
 }
