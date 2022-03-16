@@ -69,6 +69,17 @@ public:
     }
   };
 
+  Node(const std::string & name, const rclcpp::NodeOptions & options) : rclcpp::Node(name, options)
+  {
+    this->declare_parameter<float>("node_frequency", -1.0);
+    this->get_parameter("node_frequency", loop_frequency_);
+    RCLCPP_INFO(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
+
+    if (loop_frequency_ > 0.0) {
+      loop_rate_ptr_ = std::make_shared<Rate>(loop_frequency_);
+    }
+  };
+
   /**
    * @brief transform an string into local topic name inside drone namespace and node namespace
    * 
