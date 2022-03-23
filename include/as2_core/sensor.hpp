@@ -30,7 +30,7 @@ class GenericSensor
 public:
   GenericSensor(const std::string & id, as2::Node * node_ptr) : sensor_id_(id), node_ptr_(node_ptr)
   {
-    topic_name_ = std::string(node_ptr->get_name()) + "/" + sensor_id_;
+    topic_name_ = std::string("sensor_measurements/") + sensor_id_;
   }
 
 protected:
@@ -56,7 +56,7 @@ class Sensor : public GenericSensor
 public:
   Sensor(const std::string & id, as2::Node * node_ptr) : GenericSensor(id, node_ptr)
   {
-    sensor_publisher_ = node_ptr_->create_publisher<T>(this->topic_name_, 10);
+    sensor_publisher_ = node_ptr_->create_publisher<T>(this->topic_name_, as2_names::topics::sensor_measurements::qos);
   }
 
   void publishData(const T & msg) { this->sensor_publisher_->publish(msg); }

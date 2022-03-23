@@ -61,18 +61,19 @@ AerialPlatform::AerialPlatform()
   }
 
   pose_command_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-    this->generate_global_name("actuator_command/pose"), 10,
+    this->generate_global_name(as2_names::topics::actuator_command::pose), 
+    as2_names::topics::actuator_command::qos,
     [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) {
       this->command_pose_msg_ = *msg.get();
     });
 
   twist_command_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
-    this->generate_global_name("actuator_command/twist"), 10,
+    this->generate_global_name(as2_names::topics::actuator_command::twist), as2_names::topics::actuator_command::qos,
     [this](const geometry_msgs::msg::TwistStamped::ConstSharedPtr msg) {
       this->command_twist_msg_ = *msg.get();
     });
   thrust_command_sub_ = this->create_subscription<as2_msgs::msg::Thrust>(
-    this->generate_global_name("actuator_command/thrust"), 10,
+    this->generate_global_name(as2_names::topics::actuator_command::thrust), as2_names::topics::actuator_command::qos,
     [this](const as2_msgs::msg::Thrust::ConstSharedPtr msg) {
       this->command_thrust_msg_ = *msg.get();
     });
@@ -100,7 +101,7 @@ AerialPlatform::AerialPlatform()
                            ));
 
   platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
-    this->generate_global_name("platform/info"), 10);
+    this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
 
   platform_info_timer_ = this->create_wall_timer(
     std::chrono::milliseconds((int64_t)(1000.0f / AS2_PLATFORM_INFO_PUB_FREQ_HZ)),

@@ -39,6 +39,7 @@
 #include <string>
 
 #include "as2_core/platform_state_machine.hpp"
+#include "as2_core/names/topics.hpp"
 #include "as2_msgs/msg/platform_control_mode.hpp"
 #include "as2_msgs/msg/platform_info.hpp"
 #include "as2_msgs/msg/platform_status.hpp"
