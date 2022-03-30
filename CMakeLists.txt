@@ -23,6 +23,7 @@ set(PROJECT_DEPENDENCIES
   as2_msgs
   std_srvs
   geometry_msgs
+  rclcpp_lifecycle
 )
 
 foreach(DEPENDENCY ${PROJECT_DEPENDENCIES})

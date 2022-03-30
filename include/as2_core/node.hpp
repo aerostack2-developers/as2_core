@@ -43,6 +43,8 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 
 namespace as2
 {
@@ -50,7 +52,7 @@ namespace as2
  * @brief Basic Aerostack2 Node, it heritages all the functionality of an rclcpp::Node
  * 
  */
-class Node : public rclcpp::Node
+class Node : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   /**
@@ -58,7 +60,7 @@ public:
    * 
    * @param name Node name
    */
-  Node(const std::string & name) : rclcpp::Node(name)
+  Node(const std::string & name) : rclcpp_lifecycle::LifecycleNode(name)
   {
     this->declare_parameter<float>("node_frequency", -1.0);
     this->get_parameter("node_frequency", loop_frequency_);
@@ -69,7 +71,26 @@ public:
     }
   };
 
-  Node(const std::string & name, const rclcpp::NodeOptions & options) : rclcpp::Node(name, options)
+  template <typename MessageT, typename AllocatorT = std::allocator<void>>
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<MessageT, AllocatorT>>
+  create_publisher(
+      const std::string &topic_name,
+      const rclcpp::QoS &qos,
+      const rclcpp::PublisherOptionsWithAllocator<AllocatorT> &options =
+    rclcpp::PublisherOptionsWithAllocator<AllocatorT>())
+  {
+    using PublisherT = rclcpp_lifecycle::LifecyclePublisher<MessageT, AllocatorT>;
+    RCLCPP_INFO(this->get_logger(), "PUB %s", topic_name.c_str());
+    std::shared_ptr<PublisherT> pub = rclcpp::create_publisher<MessageT, AllocatorT, PublisherT>(
+        *this,
+        topic_name,
+        qos,
+        options);
+    pub->on_activate();
+    return pub;
+  }
+
+  Node(const std::string & name, const rclcpp::NodeOptions & options) : rclcpp_lifecycle::LifecycleNode(name, options)
   {
     this->declare_parameter<float>("node_frequency", -1.0);
     this->get_parameter("node_frequency", loop_frequency_);
