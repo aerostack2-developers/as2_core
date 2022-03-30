@@ -21,6 +21,8 @@ namespace as2_names {
       const std::string pose = "motion_reference/pose";
       const std::string twist = "motion_reference/twist";
       const std::string trajectory = "motion_reference/trajectory";
+      const rclcpp::QoS qos_wp = rclcpp::ServicesQoS();
+      const std::string wayp = "motion_reference/waypoints";
     }
     namespace actuator_command {
       const rclcpp::QoS qos = rclcpp::SensorDataQoS();
