@@ -6,6 +6,8 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/publisher_options.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 
 namespace as2
 {
@@ -19,12 +21,12 @@ namespace as2
 void spinLoop(std::shared_ptr<as2::Node> node, std::function<void()> run_function = nullptr)
 {
   if (node->get_loop_frequency() <= 0) {
-    rclcpp::spin(node);
+    rclcpp::spin(node->get_node_base_interface());
     return;
   }
 
   while (rclcpp::ok()) {
-    rclcpp::spin_some(node);
+    rclcpp::spin_some(node->get_node_base_interface());
     if (run_function != nullptr) run_function();
     if (!node->sleep()) {
       // if sleep returns false, it means that loop rate cannot keep up with the desired rate
