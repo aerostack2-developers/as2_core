@@ -7,7 +7,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -16,7 +16,7 @@
  * 3. Neither the name of the copyright holder nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -45,26 +45,33 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-
-namespace as2
-{
+namespace as2 {
 /**
  * @brief Basic Aerostack2 Node, it heritages all the functionality of an rclcpp::Node
- * 
+ *
  */
-class Node : public rclcpp_lifecycle::LifecycleNode
-{
-public:
+class Node : public rclcpp_lifecycle::LifecycleNode {
+  public:
   /**
    * @brief Construct a new Node object
-   * 
+   *
    * @param name Node name
    */
-  Node(const std::string & name) : rclcpp_lifecycle::LifecycleNode(name)
-  {
+  // Node(const std::string &name) : rclcpp_lifecycle::LifecycleNode(name) {
+  //   this->declare_parameter<float>("node_frequency", -1.0);
+  //   this->get_parameter("node_frequency", loop_frequency_);
+  //   RCLCPP_DEBUG(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
+
+  //   if (loop_frequency_ > 0.0) {
+  //     loop_rate_ptr_ = std::make_shared<Rate>(loop_frequency_);
+  //   }
+  // };
+
+  Node(const std::string &name, const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
+      : rclcpp_lifecycle::LifecycleNode(name, options) {
     this->declare_parameter<float>("node_frequency", -1.0);
     this->get_parameter("node_frequency", loop_frequency_);
-    RCLCPP_INFO(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
+    RCLCPP_DEBUG(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
 
     if (loop_frequency_ > 0.0) {
       loop_rate_ptr_ = std::make_shared<Rate>(loop_frequency_);
@@ -72,67 +79,111 @@ public:
   };
 
   template <typename MessageT, typename AllocatorT = std::allocator<void>>
-  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<MessageT, AllocatorT>>
-  create_publisher(
-      const std::string &topic_name,
-      const rclcpp::QoS &qos,
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<MessageT, AllocatorT>> create_publisher(
+      const std::string &topic_name, const rclcpp::QoS &qos,
       const rclcpp::PublisherOptionsWithAllocator<AllocatorT> &options =
-    rclcpp::PublisherOptionsWithAllocator<AllocatorT>())
-  {
+          rclcpp::PublisherOptionsWithAllocator<AllocatorT>()) {
     using PublisherT = rclcpp_lifecycle::LifecyclePublisher<MessageT, AllocatorT>;
-    RCLCPP_INFO(this->get_logger(), "PUB %s", topic_name.c_str());
-    std::shared_ptr<PublisherT> pub = rclcpp::create_publisher<MessageT, AllocatorT, PublisherT>(
-        *this,
-        topic_name,
-        qos,
-        options);
+    // RCLCPP_DEBUG(this->get_logger(), "PUB %s", topic_name.c_str());
+    std::shared_ptr<PublisherT> pub =
+        rclcpp::create_publisher<MessageT, AllocatorT, PublisherT>(*this, topic_name, qos, options);
     pub->on_activate();
     return pub;
   }
 
-  Node(const std::string & name, const rclcpp::NodeOptions & options) : rclcpp_lifecycle::LifecycleNode(name, options)
-  {
-    this->declare_parameter<float>("node_frequency", -1.0);
-    this->get_parameter("node_frequency", loop_frequency_);
-    RCLCPP_INFO(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
-
-    if (loop_frequency_ > 0.0) {
-      loop_rate_ptr_ = std::make_shared<Rate>(loop_frequency_);
-    }
-  };
-
   /**
    * @brief transform an string into local topic name inside drone namespace and node namespace
-   * 
+   *
    * @param name source string
    * @return std::string  result name
    */
-  std::string generate_local_name(const std::string & name);
+  std::string generate_local_name(const std::string &name);
 
   /**
    * @brief transform an string into global topic name inside drone namespace
-   * 
+   *
    * @param name source string
    * @return std::string result name
    */
-  std::string generate_global_name(const std::string & name);
+  std::string generate_global_name(const std::string &name);
 
-private:
+  protected:
+  /**
+   * @brief Callback for the activate state
+   * @param state
+   * @return CallbackReturn
+   */
+  virtual CallbackReturn on_activate(const rclcpp_lifecycle::State &) override {
+    RCLCPP_DEBUG(this->get_logger(), "node [%s] on_activate", this->get_name());
+    return CallbackReturn::SUCCESS;
+  };
+
+  /**
+   * @brief Callback for the deactivate state
+   * @param state
+   * @return CallbackReturn
+   */
+  virtual CallbackReturn on_deactivate(const rclcpp_lifecycle::State &) override {
+    RCLCPP_DEBUG(this->get_logger(), "node [%s] on_deactivate", this->get_name());
+    return CallbackReturn::SUCCESS;
+  };
+
+  /**
+   * @brief Callback for the configure state
+   * @param state
+   * @return CallbackReturn
+   */
+
+  virtual CallbackReturn on_configure(const rclcpp_lifecycle::State &) override {
+    RCLCPP_DEBUG(this->get_logger(), "node [%s] on_configure", this->get_name());
+    return CallbackReturn::SUCCESS;
+  };
+
+  /**
+   * @brief Callback for the cleanup state
+   * @param state
+   * @return CallbackReturn
+   */
+  virtual CallbackReturn on_cleanup(const rclcpp_lifecycle::State &) override {
+    RCLCPP_DEBUG(this->get_logger(), "node [%s] on_cleanup", this->get_name());
+    return CallbackReturn::SUCCESS;
+  };
+
+  /**
+   * @brief Callback for the shutdown state
+   * @param state
+   * @return CallbackReturn
+   */
+  virtual CallbackReturn on_shutdown(const rclcpp_lifecycle::State &) override {
+    RCLCPP_DEBUG(this->get_logger(), "node [%s] on_shutdown", this->get_name());
+    return CallbackReturn::SUCCESS;
+  };
+
+  /**
+   * @brief Callback for the error state
+   * @param state
+   * @return CallbackReturn
+   */
+  virtual CallbackReturn on_error(const rclcpp_lifecycle::State &) override {
+    RCLCPP_ERROR(this->get_logger(), "node [%s] on_error", this->get_name());
+    return CallbackReturn::SUCCESS;
+  };
+
+  private:
   /**
    * @brief frequency of the spin cycle of the node
    */
   double loop_frequency_;
   std::shared_ptr<as2::Rate> loop_rate_ptr_;
 
-public:
+  public:
   /**
-   * @brief sleeps the node to ensure node_frecuency desired 
-   * 
+   * @brief sleeps the node to ensure node_frecuency desired
+   *
    * @return true the node is sleeping
    * @return false the node is not sleeping, this means that desired frequency is not reached
    */
-  bool sleep()
-  {
+  bool sleep() {
     if (loop_rate_ptr_) {
       return loop_rate_ptr_->sleep();
     } else {
@@ -141,19 +192,18 @@ public:
     };
   };
   /**
-   * @brief Get the loop frequency object 
-   * 
+   * @brief Get the loop frequency object
+   *
    * @return double frequency in Hz
    */
   inline double get_loop_frequency() { return loop_frequency_; }
 
-  bool preset_loop_frequency(double frequency)
-  {
+  bool preset_loop_frequency(double frequency) {
     if (frequency <= 0) return true;  // default frequency is -1
     if (loop_rate_ptr_) {
-      RCLCPP_INFO(
-        this->get_logger(), "Preset Loop Frequency [%d Hz] was overwrite to launcher params to %d",
-        (int)frequency, (int)loop_frequency_);
+      RCLCPP_INFO(this->get_logger(),
+                  "Preset Loop Frequency [%d Hz] was overwrite to launcher params to %d",
+                  (int)frequency, (int)loop_frequency_);
       return false;
     }
     loop_frequency_ = frequency;

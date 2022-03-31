@@ -48,6 +48,7 @@ set(SOURCE_CPP_FILES
   src/utils.cpp
   src/tf_utils.cpp
   src/rate.cpp
+  src/core_functions.cpp
 )
 # set(INCLUDE_HPP_FILES 
 #   include/${PROJECT_NAME}/core_libs.hpp
