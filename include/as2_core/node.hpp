@@ -45,12 +45,26 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+#define AS2_RCLCPP_NODE 1
+#define AS2_LIFECYLCE_NODE  2
+
+#define AS2_NODE_FATHER AS2_RCLCPP_NODE
+// #define AS2_NODE_FATHER AS2_LIFECYLCE_NODE
+
+#if AS2_NODE_FATHER == AS2_RCLCPP_NODE
+#define AS2_NODE_FATHER_TYPE rclcpp::Node
+#elif AS2_NODE_FATHER == AS2_LIFECYLCE_NODE
+#define AS2_NODE_FATHER_TYPE rclcpp_lifecycle::LifecycleNode
+#endif
+
+
+
 namespace as2 {
 /**
  * @brief Basic Aerostack2 Node, it heritages all the functionality of an rclcpp::Node
- *
  */
-class Node : public rclcpp_lifecycle::LifecycleNode {
+
+class Node : public AS2_NODE_FATHER_TYPE {
   public:
   /**
    * @brief Construct a new Node object
@@ -68,7 +82,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
   // };
 
   Node(const std::string &name, const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
-      : rclcpp_lifecycle::LifecycleNode(name, options) {
+      : AS2_NODE_FATHER_TYPE(name, options) {
     this->declare_parameter<float>("node_frequency", -1.0);
     this->get_parameter("node_frequency", loop_frequency_);
     RCLCPP_DEBUG(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
@@ -78,6 +92,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
     }
   };
 
+#if AS2_NODE_FATHER == AS2_LIFECYLCE_NODE
   template <typename MessageT, typename AllocatorT = std::allocator<void>>
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<MessageT, AllocatorT>> create_publisher(
       const std::string &topic_name, const rclcpp::QoS &qos,
@@ -90,6 +105,29 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
     pub->on_activate();
     return pub;
   }
+
+#elif AS2_NODE_FATHER == AS2_RCLCPP_NODE
+
+public: 
+  void configure() {
+    this->on_configure(rclcpp_lifecycle::State());
+  }
+  void activate() {
+    this->on_activate(rclcpp_lifecycle::State());
+  }
+  void deactivate() {
+    this->on_deactivate(rclcpp_lifecycle::State());
+  }
+  void cleanup() {
+    this->on_cleanup(rclcpp_lifecycle::State());
+  }
+  void shutdown() {
+    this->on_shutdown(rclcpp_lifecycle::State());
+  }
+  void error() {
+    this ->on_error(rclcpp_lifecycle::State());
+  }
+#endif
 
   /**
    * @brief transform an string into local topic name inside drone namespace and node namespace
@@ -112,8 +150,11 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
    * @brief Callback for the activate state
    * @param state
    * @return CallbackReturn
+   *
    */
-  virtual CallbackReturn on_activate(const rclcpp_lifecycle::State &) override {
+
+  using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  virtual CallbackReturn on_activate(const rclcpp_lifecycle::State & = rclcpp_lifecycle::State()) {
     RCLCPP_DEBUG(this->get_logger(), "node [%s] on_activate", this->get_name());
     return CallbackReturn::SUCCESS;
   };
@@ -123,7 +164,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
    * @param state
    * @return CallbackReturn
    */
-  virtual CallbackReturn on_deactivate(const rclcpp_lifecycle::State &) override {
+  virtual CallbackReturn on_deactivate(const rclcpp_lifecycle::State & = rclcpp_lifecycle::State()){
     RCLCPP_DEBUG(this->get_logger(), "node [%s] on_deactivate", this->get_name());
     return CallbackReturn::SUCCESS;
   };
@@ -134,7 +175,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
    * @return CallbackReturn
    */
 
-  virtual CallbackReturn on_configure(const rclcpp_lifecycle::State &) override {
+  virtual CallbackReturn on_configure(const rclcpp_lifecycle::State & = rclcpp_lifecycle::State()) {
     RCLCPP_DEBUG(this->get_logger(), "node [%s] on_configure", this->get_name());
     return CallbackReturn::SUCCESS;
   };
@@ -144,7 +185,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
    * @param state
    * @return CallbackReturn
    */
-  virtual CallbackReturn on_cleanup(const rclcpp_lifecycle::State &) override {
+  virtual CallbackReturn on_cleanup(const rclcpp_lifecycle::State & = rclcpp_lifecycle::State()) {
     RCLCPP_DEBUG(this->get_logger(), "node [%s] on_cleanup", this->get_name());
     return CallbackReturn::SUCCESS;
   };
@@ -154,7 +195,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
    * @param state
    * @return CallbackReturn
    */
-  virtual CallbackReturn on_shutdown(const rclcpp_lifecycle::State &) override {
+  virtual CallbackReturn on_shutdown(const rclcpp_lifecycle::State & = rclcpp_lifecycle::State()) {
     RCLCPP_DEBUG(this->get_logger(), "node [%s] on_shutdown", this->get_name());
     return CallbackReturn::SUCCESS;
   };
@@ -164,7 +205,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
    * @param state
    * @return CallbackReturn
    */
-  virtual CallbackReturn on_error(const rclcpp_lifecycle::State &) override {
+  virtual CallbackReturn on_error(const rclcpp_lifecycle::State & = rclcpp_lifecycle::State()) {
     RCLCPP_ERROR(this->get_logger(), "node [%s] on_error", this->get_name());
     return CallbackReturn::SUCCESS;
   };
@@ -191,6 +232,7 @@ class Node : public rclcpp_lifecycle::LifecycleNode {
       return false;
     };
   };
+
   /**
    * @brief Get the loop frequency object
    *
