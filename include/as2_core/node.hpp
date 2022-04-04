@@ -71,15 +71,6 @@ class Node : public AS2_NODE_FATHER_TYPE {
    *
    * @param name Node name
    */
-  // Node(const std::string &name) : rclcpp_lifecycle::LifecycleNode(name) {
-  //   this->declare_parameter<float>("node_frequency", -1.0);
-  //   this->get_parameter("node_frequency", loop_frequency_);
-  //   RCLCPP_DEBUG(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
-
-  //   if (loop_frequency_ > 0.0) {
-  //     loop_rate_ptr_ = std::make_shared<Rate>(loop_frequency_);
-  //   }
-  // };
 
   Node(const std::string &name, const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
       : AS2_NODE_FATHER_TYPE(name, options) {
