@@ -212,10 +212,38 @@ public:
    */
   inline float getMaxThrust() const { return parameters_.max_thrust; }
 
-  //TODO: comment all the getters
+  /**
+   * @brief Get whether the platform is armed or not.
+   * @return true Armed
+   * @return false Disarmed
+   */
   inline bool getArmingState() const { return platform_info_msg_.armed; }
+
+  /**
+   * @brief Get wheter the connection is established or not.
+   * @return true Connection active
+   * @return false Connection not active
+   */
   inline bool getConnectedStatus() const { return platform_info_msg_.connected; }
+
+  /**
+   * @brief Get whether offboard mode is active or not.
+   * @return true Offboard mode enabled
+   * @return false Offboard mode disabled
+   */
   inline bool getOffboardMode() const { return platform_info_msg_.offboard; }
+
+  /**
+   * @brief Get current platform control mode.
+   * @return as2_msgs::msg::PlatformControlMode current platform control mode 
+   */
+  inline as2_msgs::msg::PlatformControlMode & getControlMode() { return platform_info_msg_.current_control_mode; }
+
+  /**
+   * @brief Get whether a control mode is active or not.
+   * @return true Control mode set and valid
+   * @return false Control mode unset
+   */
   inline bool isControlModeSettled() const
   {
     return (
