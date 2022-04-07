@@ -103,11 +103,6 @@ public:
   virtual void configureSensors() = 0;
 
   /**
-   * @brief publishes all the platform sensors data
-   */
-  virtual void publishSensorData() = 0;
-
-  /**
    * @brief Handles how a command must be sended in the concrete platform.
    * 
    * @return true command is sended successfully.
