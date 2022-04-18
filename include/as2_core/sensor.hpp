@@ -128,8 +128,8 @@ namespace as2
     using Lidar = Sensor<sensor_msgs::msg::LaserScan>;
     using Battery = Sensor<sensor_msgs::msg::BatteryState>;
     using Barometer = Sensor<sensor_msgs::msg::FluidPressure>;
-    using Magnometer = Sensor<sensor_msgs::msg::MagneticField>;
-    using UltrasonicAltimeter = Sensor<sensor_msgs::msg::Range>;
+    using Compass = Sensor<sensor_msgs::msg::MagneticField>;
+    using RangeFinder = Sensor<sensor_msgs::msg::Range>;
 
   }; // namespace sensors
 };   // namespace as2

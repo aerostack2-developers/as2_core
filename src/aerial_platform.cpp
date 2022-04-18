@@ -100,6 +100,21 @@ AerialPlatform::AerialPlatform()
                            std::placeholders::_2   // Corresponds to the 'response' input
                            ));
 
+  platform_takeoff_srv_ = this->create_service<std_srvs::srv::SetBool>(
+    "platform_takeoff", std::bind(
+                           &AerialPlatform::platformTakeoffSrvCall, this,
+                           std::placeholders::_1,  // Corresponds to the 'request'  input
+                           std::placeholders::_2   // Corresponds to the 'response' input
+                           ));
+
+  platform_land_srv_ = this->create_service<std_srvs::srv::SetBool>(
+    "platform_land", std::bind(
+                           &AerialPlatform::platformLandSrvCall, this,
+                           std::placeholders::_1,  // Corresponds to the 'request'  input
+                           std::placeholders::_2   // Corresponds to the 'response' input
+                           ));
+
+
   platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
     this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
 
@@ -198,5 +213,34 @@ void AerialPlatform::setArmingStateSrvCall(
     platform_info_msg_.armed = request->data;
   }
 }
+
+void AerialPlatform::platformTakeoffSrvCall(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  // TODO: Implement STATE MACHINE check
+  response->success = ownTakeoff();
+  if (response->success) {
+    handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::TOOK_OFF);
+  }
+  else {
+    RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO TAKE OFF");
+  }
+};
+
+void AerialPlatform::platformLandSrvCall(
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
+  // TODO: Implement STATE MACHINE check
+  response->success = ownLand();
+  if (response->success) {
+    handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::LANDED);
+  }
+  else {
+    RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO LAND");
+  }
+};
+
 
 };  // namespace as2
