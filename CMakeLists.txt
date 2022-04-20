@@ -24,6 +24,7 @@ set(PROJECT_DEPENDENCIES
   std_srvs
   geometry_msgs
   rclcpp_lifecycle
+  rclcpp_action
 )
 
 foreach(DEPENDENCY ${PROJECT_DEPENDENCIES})
