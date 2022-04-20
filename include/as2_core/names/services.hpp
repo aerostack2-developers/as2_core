@@ -15,7 +15,7 @@ namespace as2_names
         namespace motion_reference
         {
             const std::string sendtrajwayp = "motion_reference/";
-            const std::string setcontrolmode = "set_controller_control_mode/";
+            const std::string setcontrolmode = "set_controller_control_mode";
         }
         namespace gps
         {
