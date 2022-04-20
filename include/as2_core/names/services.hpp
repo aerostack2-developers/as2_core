@@ -10,7 +10,7 @@ namespace as2_names
         namespace platform
         {
             const std::string setplatformcontrolmode = "platform/";
-            const std::string setplatformstatemachineevent = "platform/";
+            const std::string setplatformstatemachineevent = "platform/state_machine_event";
         }
         namespace motion_reference
         {
