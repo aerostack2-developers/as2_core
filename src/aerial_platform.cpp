@@ -37,8 +37,6 @@ namespace as2
 AerialPlatform::AerialPlatform()
 : as2::Node(std::string("platform")), state_machine_(as2::PlatformStateMachine(this))
 {
-  state_machine_ = as2::PlatformStateMachine(this);
-
   platform_info_msg_.armed = false;
   platform_info_msg_.offboard = false;
   platform_info_msg_.connected = false;

@@ -46,7 +46,10 @@ PlatformStateMachine::PlatformStateMachine(as2::Node * node) : node_ptr_(node)
       &PlatformStateMachine::setStateMachineEventSrvCallback, this, std::placeholders::_1,
       std::placeholders::_2));
 };
-PlatformStateMachine::~PlatformStateMachine(){};
+
+PlatformStateMachine::~PlatformStateMachine(){
+  state_machine_event_srv_.reset();
+};
 
 bool PlatformStateMachine::processEvent(const int8_t & event)
 {
