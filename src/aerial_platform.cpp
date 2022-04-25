@@ -123,6 +123,14 @@ namespace as2
                              std::placeholders::_2  // Corresponds to the 'response' input
                              ));
 
+    list_control_modes_srv_ = this->create_service<as2_msgs::srv::ListControlModes>(
+      "list_control_modes", std::bind(
+        &AerialPlatform::listControlModesSrvCall, this,
+        std::placeholders::_1, // Corresponds to the 'request'  input
+        std::placeholders::_2  // Corresponds to the 'response' input
+      )
+    );
+
     platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
         this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
 
