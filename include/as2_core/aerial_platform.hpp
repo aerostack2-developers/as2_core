@@ -45,6 +45,7 @@
 #include "as2_msgs/msg/platform_status.hpp"
 #include "as2_msgs/msg/thrust.hpp"
 #include "as2_msgs/srv/set_platform_control_mode.hpp"
+#include "as2_msgs/srv/list_control_modes.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -62,6 +63,7 @@ struct AerialPlatformParameters {
   float mass;
   float max_thrust;
   bool simulation_mode;
+  std::string control_modes_file;
 };
 
 /**
@@ -79,6 +81,7 @@ class AerialPlatform : public as2::Node {
   as2::AerialPlatformParameters parameters_;
   rclcpp::TimerBase::SharedPtr platform_info_timer_;
   as2::PlatformStateMachine state_machine_;
+  std::vector<uint8_t> available_control_modes_;
 
   protected:
   geometry_msgs::msg::PoseStamped command_pose_msg_;
@@ -184,6 +187,8 @@ class AerialPlatform : public as2::Node {
    */
   bool sendCommand();
 
+  void loadControlModes(const std::string & filename);
+
   // Getters
   public:
   /**
@@ -282,6 +287,7 @@ class AerialPlatform : public as2::Node {
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_offboard_mode_srv_;
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr platform_takeoff_srv_;
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr platform_land_srv_;
+  rclcpp::Service<as2_msgs::srv::ListControlModes>::SharedPtr list_control_modes_srv_;
 
   /**
    * @brief Set Aircraft Control Mode Service Callback
@@ -329,7 +335,17 @@ class AerialPlatform : public as2::Node {
    */
   void platformLandSrvCall(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                            std::shared_ptr<std_srvs::srv::SetBool::Response> response);
-
+  
+  /**
+   *
+   * @brief get list of available Control Modes Service Callback
+   *
+   * @param request
+   * @param response
+   */
+  void listControlModesSrvCall(const std::shared_ptr<as2_msgs::srv::ListControlModes::Request> request,
+                               std::shared_ptr<as2_msgs::srv::ListControlModes::Response> response);
+  
 };  // class AerialPlatform
 };  // namespace as2
 

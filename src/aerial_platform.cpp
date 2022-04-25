@@ -7,7 +7,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -16,7 +16,7 @@
  * 3. Neither the name of the copyright holder nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -34,211 +34,261 @@
 
 namespace as2
 {
-AerialPlatform::AerialPlatform()
-: as2::Node(std::string("platform")), state_machine_(as2::PlatformStateMachine(this))
-{
-  platform_info_msg_.armed = false;
-  platform_info_msg_.offboard = false;
-  platform_info_msg_.connected = false;
-  platform_info_msg_.current_control_mode.control_mode = as2_msgs::msg::PlatformControlMode::UNSET;
+  AerialPlatform::AerialPlatform()
+      : as2::Node(std::string("platform")), state_machine_(as2::PlatformStateMachine(this))
+  {
+    platform_info_msg_.armed = false;
+    platform_info_msg_.offboard = false;
+    platform_info_msg_.connected = false;
+    platform_info_msg_.current_control_mode.control_mode = as2_msgs::msg::PlatformControlMode::UNSET;
 
-  this->declare_parameter<bool>("simulation_mode", false);
-  this->declare_parameter<float>("mass", 1.0);
-  this->declare_parameter<float>("max_thrust", 0.0);
+    this->declare_parameter<bool>("simulation_mode", false);
+    this->declare_parameter<float>("mass", 1.0);
+    this->declare_parameter<float>("max_thrust", 0.0);
+    this->declare_parameter<std::string>("control_modes_file", "config/control_modes.yaml");
 
-  this->get_parameter("simulation_mode", parameters_.simulation_mode);
-  this->get_parameter("mass", parameters_.mass);
-  this->get_parameter("max_thrust", parameters_.max_thrust);
+    this->get_parameter("simulation_mode", parameters_.simulation_mode);
+    this->get_parameter("mass", parameters_.mass);
+    this->get_parameter("max_thrust", parameters_.max_thrust);
+    this->get_parameter("control_modes_file", parameters_.control_modes_file);
 
-  RCLCPP_INFO(this->get_logger(), "simulation_mode: %d", parameters_.simulation_mode);
-  RCLCPP_INFO(this->get_logger(), "mass: %.2f kg", parameters_.mass);
-  if (parameters_.max_thrust == 0) {
-    RCLCPP_WARN(this->get_logger(), "max_thrust is 0 : CODE MAY FAIL IF THRUST IS NORMALIZED");
-  } else {
-    RCLCPP_INFO(this->get_logger(), "max_thrust: %.2f N", parameters_.max_thrust);
-  }
+    RCLCPP_INFO(this->get_logger(), "simulation_mode: %d", parameters_.simulation_mode);
+    RCLCPP_INFO(this->get_logger(), "mass: %.2f kg", parameters_.mass);
+    if (parameters_.max_thrust == 0)
+    {
+      RCLCPP_WARN(this->get_logger(), "max_thrust is 0 : CODE MAY FAIL IF THRUST IS NORMALIZED");
+    }
+    else
+    {
+      RCLCPP_INFO(this->get_logger(), "max_thrust: %.2f N", parameters_.max_thrust);
+    }
 
-  pose_command_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-    this->generate_global_name(as2_names::topics::actuator_command::pose), 
-    as2_names::topics::actuator_command::qos,
-    [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) {
-      this->command_pose_msg_ = *msg.get();
-    });
+    this->loadControlModes(parameters_.control_modes_file);
+    RCLCPP_INFO(this->get_logger(), "control_modes_file: %s", parameters_.control_modes_file);
 
-  twist_command_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
-    this->generate_global_name(as2_names::topics::actuator_command::twist), as2_names::topics::actuator_command::qos,
-    [this](const geometry_msgs::msg::TwistStamped::ConstSharedPtr msg) {
-      this->command_twist_msg_ = *msg.get();
-    });
-  thrust_command_sub_ = this->create_subscription<as2_msgs::msg::Thrust>(
-    this->generate_global_name(as2_names::topics::actuator_command::thrust), as2_names::topics::actuator_command::qos,
-    [this](const as2_msgs::msg::Thrust::ConstSharedPtr msg) {
-      this->command_thrust_msg_ = *msg.get();
-    });
+    pose_command_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+        this->generate_global_name(as2_names::topics::actuator_command::pose),
+        as2_names::topics::actuator_command::qos,
+        [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
+        {
+          this->command_pose_msg_ = *msg.get();
+        });
 
-  set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetPlatformControlMode>(
-    this->generate_global_name("/set_platform_control_mode"),
-    std::bind(
-      &AerialPlatform::setPlatformControlModeSrvCall, this,
-      std::placeholders::_1,  // Corresponds to the 'request'  input
-      std::placeholders::_2   // Corresponds to the 'response' input
-      ));
+    twist_command_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
+        this->generate_global_name(as2_names::topics::actuator_command::twist), as2_names::topics::actuator_command::qos,
+        [this](const geometry_msgs::msg::TwistStamped::ConstSharedPtr msg)
+        {
+          this->command_twist_msg_ = *msg.get();
+        });
+    thrust_command_sub_ = this->create_subscription<as2_msgs::msg::Thrust>(
+        this->generate_global_name(as2_names::topics::actuator_command::thrust), as2_names::topics::actuator_command::qos,
+        [this](const as2_msgs::msg::Thrust::ConstSharedPtr msg)
+        {
+          this->command_thrust_msg_ = *msg.get();
+        });
 
-  set_arming_state_srv_ = this->create_service<std_srvs::srv::SetBool>(
-    "set_arming_state", std::bind(
-                          &AerialPlatform::setArmingStateSrvCall, this,
-                          std::placeholders::_1,  // Corresponds to the 'request'  input
-                          std::placeholders::_2   // Corresponds to the 'response' input
-                          ));
+    set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetPlatformControlMode>(
+        this->generate_global_name("/set_platform_control_mode"),
+        std::bind(
+            &AerialPlatform::setPlatformControlModeSrvCall, this,
+            std::placeholders::_1, // Corresponds to the 'request'  input
+            std::placeholders::_2  // Corresponds to the 'response' input
+            ));
 
-  set_offboard_mode_srv_ = this->create_service<std_srvs::srv::SetBool>(
-    "set_offboard_mode", std::bind(
-                           &AerialPlatform::setOffboardModeSrvCall, this,
-                           std::placeholders::_1,  // Corresponds to the 'request'  input
-                           std::placeholders::_2   // Corresponds to the 'response' input
-                           ));
+    set_arming_state_srv_ = this->create_service<std_srvs::srv::SetBool>(
+        "set_arming_state", std::bind(
+                                &AerialPlatform::setArmingStateSrvCall, this,
+                                std::placeholders::_1, // Corresponds to the 'request'  input
+                                std::placeholders::_2  // Corresponds to the 'response' input
+                                ));
 
-  platform_takeoff_srv_ = this->create_service<std_srvs::srv::SetBool>(
-    "platform_takeoff", std::bind(
-                           &AerialPlatform::platformTakeoffSrvCall, this,
-                           std::placeholders::_1,  // Corresponds to the 'request'  input
-                           std::placeholders::_2   // Corresponds to the 'response' input
-                           ));
+    set_offboard_mode_srv_ = this->create_service<std_srvs::srv::SetBool>(
+        "set_offboard_mode", std::bind(
+                                 &AerialPlatform::setOffboardModeSrvCall, this,
+                                 std::placeholders::_1, // Corresponds to the 'request'  input
+                                 std::placeholders::_2  // Corresponds to the 'response' input
+                                 ));
 
-  platform_land_srv_ = this->create_service<std_srvs::srv::SetBool>(
-    "platform_land", std::bind(
-                           &AerialPlatform::platformLandSrvCall, this,
-                           std::placeholders::_1,  // Corresponds to the 'request'  input
-                           std::placeholders::_2   // Corresponds to the 'response' input
-                           ));
+    platform_takeoff_srv_ = this->create_service<std_srvs::srv::SetBool>(
+        "platform_takeoff", std::bind(
+                                &AerialPlatform::platformTakeoffSrvCall, this,
+                                std::placeholders::_1, // Corresponds to the 'request'  input
+                                std::placeholders::_2  // Corresponds to the 'response' input
+                                ));
 
+    platform_land_srv_ = this->create_service<std_srvs::srv::SetBool>(
+        "platform_land", std::bind(
+                             &AerialPlatform::platformLandSrvCall, this,
+                             std::placeholders::_1, // Corresponds to the 'request'  input
+                             std::placeholders::_2  // Corresponds to the 'response' input
+                             ));
 
-  platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
-    this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
+    platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
+        this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
 
-  platform_info_timer_ = this->create_wall_timer(
-    std::chrono::milliseconds((int64_t)(1000.0f / AS2_PLATFORM_INFO_PUB_FREQ_HZ)),
-    std::bind(&AerialPlatform::publishPlatformInfo, this));
-};
+    platform_info_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int64_t)(1000.0f / AS2_PLATFORM_INFO_PUB_FREQ_HZ)),
+        std::bind(&AerialPlatform::publishPlatformInfo, this));
+  };
 
-bool AerialPlatform::setArmingState(bool state)
-{
-  if (state == platform_info_msg_.armed && state == true) {
-    RCLCPP_INFO(this->get_logger(), "UAV is already armed");
-  } else if (state == platform_info_msg_.armed && state == false) {
-    RCLCPP_INFO(this->get_logger(), "UAV is already disarmed");
-  } else {
-    if (ownSetArmingState(state)) {
-      platform_info_msg_.armed = state;
-      if (state) {
-        handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::ARM);
-      } else {
-        handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::DISARM);
+  bool AerialPlatform::setArmingState(bool state)
+  {
+    if (state == platform_info_msg_.armed && state == true)
+    {
+      RCLCPP_INFO(this->get_logger(), "UAV is already armed");
+    }
+    else if (state == platform_info_msg_.armed && state == false)
+    {
+      RCLCPP_INFO(this->get_logger(), "UAV is already disarmed");
+    }
+    else
+    {
+      if (ownSetArmingState(state))
+      {
+        platform_info_msg_.armed = state;
+        if (state)
+        {
+          handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::ARM);
+        }
+        else
+        {
+          handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::DISARM);
+        }
+        return true;
       }
-      return true;
     }
-  }
-  return false;
-};
-
-bool AerialPlatform::setOffboardControl(bool offboard)
-{
-  if (offboard == platform_info_msg_.offboard && offboard == true) {
-    RCLCPP_INFO(this->get_logger(), "UAV is already in OFFBOARD mode");
-  } else if (offboard == platform_info_msg_.offboard && offboard == false) {
-    RCLCPP_INFO(this->get_logger(), "UAV is already in MANUAL mode");
-  } else {
-    if (ownSetOffboardControl(offboard)) {
-      platform_info_msg_.offboard = offboard;
-      return true;
-    }
-  }
-  return false;
-};
-
-// as2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
-// {
-//   platform_info_msg_ = *(ownSetPlatformInfo().get());
-//   return platform_info_msg_;
-// };
-
-bool AerialPlatform::setPlatformControlMode(const as2_msgs::msg::PlatformControlMode & msg)
-{
-  return ownSetPlatformControlMode(msg);
-};
-
-bool AerialPlatform::sendCommand()
-{
-  if (!isControlModeSettled()) {
-    RCLCPP_ERROR(this->get_logger(), "ERROR: Platform control mode is not settled yet");
     return false;
-  } else {
-    return ownSendCommand();
-  }
-};
+  };
 
-//Services Callbacks
+  bool AerialPlatform::setOffboardControl(bool offboard)
+  {
+    if (offboard == platform_info_msg_.offboard && offboard == true)
+    {
+      RCLCPP_INFO(this->get_logger(), "UAV is already in OFFBOARD mode");
+    }
+    else if (offboard == platform_info_msg_.offboard && offboard == false)
+    {
+      RCLCPP_INFO(this->get_logger(), "UAV is already in MANUAL mode");
+    }
+    else
+    {
+      if (ownSetOffboardControl(offboard))
+      {
+        platform_info_msg_.offboard = offboard;
+        return true;
+      }
+    }
+    return false;
+  };
 
-void AerialPlatform::setPlatformControlModeSrvCall(
-  const std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Request> request,
-  std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Response> response)
-{
-  bool success = this->setPlatformControlMode(request->control_mode);
-  response->success = success;
-  if (!success) {
-    RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO SET THIS CONTROL MODE TO THIS PLATFORM");
-  } else {
-    platform_info_msg_.current_control_mode = request->control_mode;
-  }
-};
+  // as2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
+  // {
+  //   platform_info_msg_ = *(ownSetPlatformInfo().get());
+  //   return platform_info_msg_;
+  // };
 
-void AerialPlatform::setOffboardModeSrvCall(
-  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
-{
-  response->success = setOffboardControl(request->data);
-  if (response->success) {
-    platform_info_msg_.offboard = request->data;
-  }
-}
+  bool AerialPlatform::setPlatformControlMode(const as2_msgs::msg::PlatformControlMode &msg)
+  {
+    return ownSetPlatformControlMode(msg);
+  };
 
-void AerialPlatform::setArmingStateSrvCall(
-  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
-{
-  response->success = setArmingState(request->data);
-  if (response->success) {
-    platform_info_msg_.armed = request->data;
-  }
-}
+  bool AerialPlatform::sendCommand()
+  {
+    if (!isControlModeSettled())
+    {
+      RCLCPP_ERROR(this->get_logger(), "ERROR: Platform control mode is not settled yet");
+      return false;
+    }
+    else
+    {
+      return ownSendCommand();
+    }
+  };
 
-void AerialPlatform::platformTakeoffSrvCall(
-  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
-{
-  // TODO: Implement STATE MACHINE check
-  response->success = ownTakeoff();
-  if (response->success) {
-    handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::TOOK_OFF);
+  void AerialPlatform::loadControlModes(const std::string & filename){
+    // this->available_control_modes_ = parse_available_modes(filename);
+    uint8_t test = 0b00000000;
+    available_control_modes_.emplace_back(test);
   }
-  else {
-    RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO TAKE OFF");
-  }
-};
 
-void AerialPlatform::platformLandSrvCall(
-  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
-{
-  // TODO: Implement STATE MACHINE check
-  response->success = ownLand();
-  if (response->success) {
-    handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::LANDED);
-  }
-  else {
-    RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO LAND");
-  }
-};
+  // Services Callbacks
 
+  void AerialPlatform::setPlatformControlModeSrvCall(
+      const std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Request> request,
+      std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Response> response)
+  {
+    bool success = this->setPlatformControlMode(request->control_mode);
+    response->success = success;
+    if (!success)
+    {
+      RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO SET THIS CONTROL MODE TO THIS PLATFORM");
+    }
+    else
+    {
+      platform_info_msg_.current_control_mode = request->control_mode;
+    }
+  };
 
-};  // namespace as2
+  void AerialPlatform::setOffboardModeSrvCall(
+      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+  {
+    response->success = setOffboardControl(request->data);
+    if (response->success)
+    {
+      platform_info_msg_.offboard = request->data;
+    }
+  }
+
+  void AerialPlatform::setArmingStateSrvCall(
+      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+  {
+    response->success = setArmingState(request->data);
+    if (response->success)
+    {
+      platform_info_msg_.armed = request->data;
+    }
+  }
+
+  void AerialPlatform::platformTakeoffSrvCall(
+      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+  {
+    // TODO: Implement STATE MACHINE check
+    response->success = ownTakeoff();
+    if (response->success)
+    {
+      handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::TOOK_OFF);
+    }
+    else
+    {
+      RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO TAKE OFF");
+    }
+  };
+
+  void AerialPlatform::platformLandSrvCall(
+      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+  {
+    // TODO: Implement STATE MACHINE check
+    response->success = ownLand();
+    if (response->success)
+    {
+      handleStateMachineEvent(as2_msgs::msg::PlatformStateMachineEvent::LANDED);
+    }
+    else
+    {
+      RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO LAND");
+    }
+  };
+
+  void AerialPlatform::listControlModesSrvCall(
+      const std::shared_ptr<as2_msgs::srv::ListControlModes::Request> request,
+      std::shared_ptr<as2_msgs::srv::ListControlModes::Response> response)
+  {
+    response->control_modes = this->available_control_modes_;
+    response->source = "Platform";
+  }
+
+}; // namespace as2
