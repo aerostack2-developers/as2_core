@@ -64,7 +64,7 @@ namespace as2
     }
 
     this->loadControlModes(parameters_.control_modes_file);
-    RCLCPP_INFO(this->get_logger(), "control_modes_file: %s", parameters_.control_modes_file);
+    RCLCPP_INFO(this->get_logger(), parameters_.control_modes_file);
 
     pose_command_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
         this->generate_global_name(as2_names::topics::actuator_command::pose),
@@ -88,43 +88,42 @@ namespace as2
         });
 
     set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetPlatformControlMode>(
-        this->generate_global_name("/set_platform_control_mode"),
-        std::bind(
-            &AerialPlatform::setPlatformControlModeSrvCall, this,
-            std::placeholders::_1, // Corresponds to the 'request'  input
-            std::placeholders::_2  // Corresponds to the 'response' input
-            ));
+      as2_names::services::platform::set_platform_control_mode, std::bind(
+        &AerialPlatform::setPlatformControlModeSrvCall, this,
+        std::placeholders::_1, // Corresponds to the 'request'  input
+        std::placeholders::_2  // Corresponds to the 'response' input
+      ));
 
     set_arming_state_srv_ = this->create_service<std_srvs::srv::SetBool>(
-        "set_arming_state", std::bind(
+      as2_names::services::platform::set_arming_state, std::bind(
                                 &AerialPlatform::setArmingStateSrvCall, this,
                                 std::placeholders::_1, // Corresponds to the 'request'  input
                                 std::placeholders::_2  // Corresponds to the 'response' input
-                                ));
+    ));
 
     set_offboard_mode_srv_ = this->create_service<std_srvs::srv::SetBool>(
-        "set_offboard_mode", std::bind(
+      as2_names::services::platform::set_offboard_mode, std::bind(
                                  &AerialPlatform::setOffboardModeSrvCall, this,
                                  std::placeholders::_1, // Corresponds to the 'request'  input
                                  std::placeholders::_2  // Corresponds to the 'response' input
-                                 ));
+    ));
 
     platform_takeoff_srv_ = this->create_service<std_srvs::srv::SetBool>(
-        "platform_takeoff", std::bind(
+      as2_names::services::platform::takeoff, std::bind(
                                 &AerialPlatform::platformTakeoffSrvCall, this,
                                 std::placeholders::_1, // Corresponds to the 'request'  input
                                 std::placeholders::_2  // Corresponds to the 'response' input
-                                ));
+    ));
 
     platform_land_srv_ = this->create_service<std_srvs::srv::SetBool>(
-        "platform_land", std::bind(
+      as2_names::services::platform::land, std::bind(
                              &AerialPlatform::platformLandSrvCall, this,
                              std::placeholders::_1, // Corresponds to the 'request'  input
                              std::placeholders::_2  // Corresponds to the 'response' input
-                             ));
+    ));
 
     list_control_modes_srv_ = this->create_service<as2_msgs::srv::ListControlModes>(
-      "list_control_modes", std::bind(
+      as2_names::services::platform::list_control_modes, std::bind(
         &AerialPlatform::listControlModesSrvCall, this,
         std::placeholders::_1, // Corresponds to the 'request'  input
         std::placeholders::_2  // Corresponds to the 'response' input
