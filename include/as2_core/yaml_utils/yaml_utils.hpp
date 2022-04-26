@@ -20,6 +20,7 @@ YAML::Node find_tag_across_multiple_yaml_files(const std::vector<std::filesystem
                                                const std::string& tag);
 
 uint8_t parse_uint_from_string(const std::string& str);
+std::vector<uint8_t> parse_uint_from_string(const std::vector<std::string>& str_v);
 
 // Recursive function to find the tag inside the yaml file
 YAML::Node find_tag_in_yaml_node(const YAML::Node& node, const std::string& tag);

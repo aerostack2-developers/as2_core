@@ -107,4 +107,12 @@ uint8_t parse_uint_from_string(const std::string& str) {
   return value;
 };
 
+std::vector<uint8_t> parse_uint_from_string(const std::vector<std::string>& str_v) {
+  std::vector<uint8_t> values;
+  for (const auto& str : str_v) {
+    values.emplace_back(parse_uint_from_string(str));
+  }
+  return values;
+};
+
 };  // namespace as2

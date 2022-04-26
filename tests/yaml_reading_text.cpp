@@ -15,15 +15,15 @@
 // const std::string config_path =
 //     "/home/miguel/aerostack2_ws/src/aerostack2/stack_devel/controller_manager/"
 //     "controller_plugin_base/available_modes.yaml";
-const std::string config_path =
-    "/home/miguel/aerostack2_ws/install/controller_plugin_differential_flatness/share/"
-    "controller_plugin_differential_flatness";
+// const std::string config_path =
+//     "/home/miguel/aerostack2_ws/install/controller_plugin_differential_flatness/share/"
+//     "controller_plugin_differential_flatness";
 
 int main(int argc, char* argv[]) {
-  auto tags = as2::find_tag_from_project_exports_path(config_path, "available_modes");
-  for (auto& tag : tags) {
-    std::cout << tag << std::endl;
-  }
+  // auto tags = as2::find_tag_from_project_exports_path(config_path, "available_modes");
+  // for (auto& tag : tags) {
+  //   std::cout << tag << std::endl;
+  // }
 
   return 0;
 }
