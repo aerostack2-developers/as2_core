@@ -32,7 +32,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
   
   add_executable(${TEST_NAME}_test ${TEST_SOURCE})
   ament_target_dependencies(${TEST_NAME}_test  ${PROJECT_DEPENDENCIES})
-  target_link_libraries(${TEST_NAME}_test gtest_main ${PROJECT_NAME})
+  target_link_libraries(${TEST_NAME}_test gtest_main ${PROJECT_NAME} yaml-cpp)
 
   # add the test executable to the list of executables to build
   gtest_discover_tests(${TEST_NAME}_test)

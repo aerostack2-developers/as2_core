@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 set(PROJECT_NAME as2_core)
 project(${PROJECT_NAME})
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 # set Release as default
@@ -25,6 +25,7 @@ set(PROJECT_DEPENDENCIES
   geometry_msgs
   rclcpp_lifecycle
   rclcpp_action
+  yaml-cpp
 )
 
 foreach(DEPENDENCY ${PROJECT_DEPENDENCIES})
@@ -50,13 +51,17 @@ set(SOURCE_CPP_FILES
   src/tf_utils.cpp
   src/rate.cpp
   src/core_functions.cpp
+  src/control_mode_utils/control_mode_utils.cpp
+  src/yaml_utils/yaml_utils.cpp
 )
+
 # set(INCLUDE_HPP_FILES 
 #   include/${PROJECT_NAME}/core_libs.hpp
 
 # )
 
 add_library(${PROJECT_NAME} ${SOURCE_CPP_FILES} )
+target_link_libraries(${PROJECT_NAME} yaml-cpp)
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
