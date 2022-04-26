@@ -26,19 +26,19 @@ namespace as2_names
         namespace controller
         {
             const std::string set_control_mode = "controller/set_control_mode";
+            const std::string list_control_modes = "controller/list_control_modes";
         }
         namespace motion_reference
         {
-            const std::string sendtrajwayp = "motion_reference/";
-            const std::string setcontrolmode = "set_controller_control_mode";
+            const std::string send_traj_wayp = "";
         }
         namespace gps
         {
-            const std::string getorigin = "";
-            const std::string setorigin = "";
-            const std::string path2geopath = "";
-            const std::string geopath2path = "";
+            const std::string get_origin = "";
+            const std::string set_origin = "";
+            const std::string path_to_geopath = "";
+            const std::string geopath_to_path = "";
         }
-        const std::string setspeed = "";  // TODO
+        const std::string set_speed = "";  // TODO
     }
 }
