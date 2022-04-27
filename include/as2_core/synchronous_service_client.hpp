@@ -14,11 +14,21 @@ class SynchronousServiceClient {
   typedef typename ServiceT::Response ResponseT;
   std::string service_name_;
 
+  typename rclcpp::Client<ServiceT>::SharedPtr client;
+  rclcpp::Node::SharedPtr node;
+
   public:
-  SynchronousServiceClient(std::string name)
-      : node(std::make_shared<rclcpp::Node>(name)), service_name_(service_name_) {}
 
   using SharedPtr = std::shared_ptr<SynchronousServiceClient<ServiceT>>;
+
+  SynchronousServiceClient(std::string service_name) {
+    service_name_ = service_name;
+    std::string node_name = service_name;
+    // replace all '/' with '_' in name
+    std::replace(node_name.begin(), node_name.end(), '/', '_');
+    node = rclcpp::Node::make_shared(node_name);
+    client = node->create_client<ServiceT>(service_name_);
+  }
 
   void init(std::string service) {
     client = node->create_client<ServiceT>(service);
@@ -54,8 +64,6 @@ class SynchronousServiceClient {
   }
 
   protected:
-  rclcpp::Node::SharedPtr node;
-  typename rclcpp::Client<ServiceT>::SharedPtr client;
 };
 
 }  // namespace as2

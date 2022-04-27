@@ -45,7 +45,6 @@
 #include "as2_msgs/msg/platform_info.hpp"
 #include "as2_msgs/msg/platform_status.hpp"
 #include "as2_msgs/msg/thrust.hpp"
-#include "as2_msgs/srv/set_platform_control_mode.hpp"
 #include "as2_msgs/srv/list_control_modes.hpp"
 #include "as2_msgs/srv/set_control_mode.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
