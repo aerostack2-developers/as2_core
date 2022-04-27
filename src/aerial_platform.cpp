@@ -40,7 +40,7 @@ namespace as2
     platform_info_msg_.armed = false;
     platform_info_msg_.offboard = false;
     platform_info_msg_.connected = false;
-    platform_info_msg_.current_control_mode.control_mode = as2_msgs::msg::PlatformControlMode::UNSET;
+    platform_info_msg_.current_control_mode.control_mode = as2_msgs::msg::ControlMode::UNSET;
 
     this->declare_parameter<bool>("simulation_mode", false);
     this->declare_parameter<float>("mass", 1.0);
@@ -56,7 +56,7 @@ namespace as2
     RCLCPP_INFO(this->get_logger(), "mass: %.2f kg", parameters_.mass);
     if (parameters_.max_thrust == 0)
     {
-      RCLCPP_WARN(this->get_logger(), "max_thrust is 0 : CODE MAY FAIL IF THRUST IS NORMALIZED");
+      RCLCPP_WARN(this->get_logger(), "max_thrust is 1 : CODE MAY FAIL IF THRUST IS NORMALIZED");
     }
     else
     {
@@ -87,7 +87,7 @@ namespace as2
           this->command_thrust_msg_ = *msg.get();
         });
 
-    set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetPlatformControlMode>(
+    set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetControlMode>(
       as2_names::services::platform::set_platform_control_mode, std::bind(
         &AerialPlatform::setPlatformControlModeSrvCall, this,
         std::placeholders::_1, // Corresponds to the 'request'  input
@@ -194,7 +194,7 @@ namespace as2
   //   return platform_info_msg_;
   // };
 
-  bool AerialPlatform::setPlatformControlMode(const as2_msgs::msg::PlatformControlMode &msg)
+  bool AerialPlatform::setPlatformControlMode(const as2_msgs::msg::ControlMode &msg)
   {
     return ownSetPlatformControlMode(msg);
   };
@@ -221,8 +221,8 @@ namespace as2
   // Services Callbacks
 
   void AerialPlatform::setPlatformControlModeSrvCall(
-      const std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Request> request,
-      std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Response> response)
+      const std::shared_ptr<as2_msgs::srv::SetControlMode::Request> request,
+      std::shared_ptr<as2_msgs::srv::SetControlMode::Response> response)
   {
     bool success = this->setPlatformControlMode(request->control_mode);
     response->success = success;

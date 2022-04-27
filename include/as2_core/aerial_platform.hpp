@@ -41,12 +41,13 @@
 #include "as2_core/names/topics.hpp"
 #include "as2_core/names/services.hpp"
 #include "as2_core/platform_state_machine.hpp"
-#include "as2_msgs/msg/platform_control_mode.hpp"
+#include "as2_msgs/msg/control_mode.hpp"
 #include "as2_msgs/msg/platform_info.hpp"
 #include "as2_msgs/msg/platform_status.hpp"
 #include "as2_msgs/msg/thrust.hpp"
 #include "as2_msgs/srv/set_platform_control_mode.hpp"
 #include "as2_msgs/srv/list_control_modes.hpp"
+#include "as2_msgs/srv/set_control_mode.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -136,7 +137,7 @@ class AerialPlatform : public as2::Node {
    * @return true Control mode is settled successfully.
    * @return false Control mode is not settled.
    */
-  virtual bool ownSetPlatformControlMode(const as2_msgs::msg::PlatformControlMode& msg) = 0;
+  virtual bool ownSetPlatformControlMode(const as2_msgs::msg::ControlMode& msg) = 0;
 
   /**
    * @brief Handles the platform takeoff command.
@@ -176,11 +177,11 @@ class AerialPlatform : public as2::Node {
   /**
    * @brief  Set the control mode of the platform.
    *
-   * @param msg as2_msgs::msg::PlatformControlMode message with the new control mode desired.
+   * @param msg as2_msgs::msg::ControlMode message with the new control mode desired.
    * @return true  If the control mode is set properly.
    * @return false If the control mode could not be set properly.
    */
-  bool setPlatformControlMode(const as2_msgs::msg::PlatformControlMode& msg);
+  bool setPlatformControlMode(const as2_msgs::msg::ControlMode& msg);
 
   /**
    * @brief Send command to the platform.
@@ -250,7 +251,7 @@ class AerialPlatform : public as2::Node {
    * @brief Get current platform control mode.
    * @return as2_msgs::msg::PlatformControlMode current platform control mode
    */
-  inline as2_msgs::msg::PlatformControlMode& getControlMode() {
+  inline as2_msgs::msg::ControlMode& getControlMode() {
     return platform_info_msg_.current_control_mode;
   }
 
@@ -283,7 +284,7 @@ class AerialPlatform : public as2::Node {
 
   // ROS Services & srv callbacks
   private:
-  rclcpp::Service<as2_msgs::srv::SetPlatformControlMode>::SharedPtr set_platform_mode_srv_;
+  rclcpp::Service<as2_msgs::srv::SetControlMode>::SharedPtr set_platform_mode_srv_;
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_arming_state_srv_;
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_offboard_mode_srv_;
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr platform_takeoff_srv_;
@@ -297,8 +298,8 @@ class AerialPlatform : public as2::Node {
    * @param response
    */
   void setPlatformControlModeSrvCall(
-      const std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Request> request,
-      std::shared_ptr<as2_msgs::srv::SetPlatformControlMode::Response> response);
+      const std::shared_ptr<as2_msgs::srv::SetControlMode::Request> request,
+      std::shared_ptr<as2_msgs::srv::SetControlMode::Response> response);
 
   /**
    * @brief Set Aircraft Arming State Service Callback
