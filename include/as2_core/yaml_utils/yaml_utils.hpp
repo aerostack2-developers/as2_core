@@ -34,11 +34,20 @@ std::vector<T> find_tag_in_yaml_file(const std::filesystem::path& yaml_file,
   if (!config_file.good()) {
     throw std::runtime_error("Could not open yaml file: " + yaml_file.string());
   }
-  YAML::Node node = YAML::LoadFile(yaml_file);
-  for (const auto& elem : find_tag_in_yaml_node(node, tag)) {
-    T value = elem.as<T>();
-    result.emplace_back(value);
+  YAML::Node node = YAML::LoadFile(yaml_file.string());
+  if (! node.IsNull()) {
+    YAML::Node tag_node = find_tag_in_yaml_node(node, tag);
+    if (! tag_node.IsNull()) {
+      std::cout << "Found tag: " << tag << " in file: " << yaml_file.string() << std::endl;
+      for (const auto& tag_value : tag_node) {
+        result.push_back(tag_value.as<T>());
+      }
+    }
   }
+  else{
+    throw std::runtime_error("Could not parse yaml file: " + yaml_file.string());
+  }
+  
   return result;
 };
 
@@ -48,7 +57,7 @@ std::vector<T> find_tag_from_project_exports_path(const std::filesystem::path& p
   std::vector<T> values;
   std::vector<std::filesystem::path> yaml_files = find_yaml_files_inside(project_exports_path);
   if (yaml_files.size() == 0) {
-    std::cerr << "Could not find yaml files with available modes" << std::endl;
+    throw std::runtime_error("Could not find any yaml files in: " + project_exports_path.string());
     return std::vector<T>();
   }
 
