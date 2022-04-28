@@ -30,11 +30,6 @@ class SynchronousServiceClient {
     client = node->create_client<ServiceT>(service_name_);
   }
 
-  void init(std::string service) {
-    client = node->create_client<ServiceT>(service);
-    client->wait_for_service();
-  }
-
   ResponseT sendRequest(const RequestT &req) {
     return sendRequest(std::make_shared<RequestT>(req));
   }
