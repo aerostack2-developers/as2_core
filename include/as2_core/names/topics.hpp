@@ -23,8 +23,6 @@ namespace as2_names {
       const std::string trajectory = "motion_reference/trajectory";
       const rclcpp::QoS qos_wp = rclcpp::ServicesQoS();
       const std::string wayp = "motion_reference/waypoints";
-      const rclcpp::QoS qos_info = rclcpp::QoS(10);
-      const std::string info = "motion_reference/info";
     }
     namespace actuator_command {
       const rclcpp::QoS qos = rclcpp::SensorDataQoS();
@@ -35,6 +33,10 @@ namespace as2_names {
     namespace platform{
       const rclcpp::QoS qos = rclcpp::QoS(10);
       const std::string info = "platform/info";
+    }
+    namespace controller{
+      const rclcpp::QoS qos_info = rclcpp::QoS(10);
+      const std::string info = "controller/info";
     }
   }
 }
