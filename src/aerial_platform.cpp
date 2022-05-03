@@ -213,9 +213,14 @@ namespace as2
   };
 
   void AerialPlatform::loadControlModes(const std::string & filename){
-    // this->available_control_modes_ = parse_available_modes(filename);
-    uint8_t test = 0b00000000;
-    available_control_modes_.emplace_back(test);
+    std::vector<std::string> modes = as2::find_tag_in_yaml_file(filename, "available_modes");
+    
+    for (std::vector<std::string>::iterator it = modes.begin(); it != modes.end(); ++it)
+    {
+      uint8_t m = as2::parse_uint_from_string(it->c_str());
+      as2::printControlMode(m);
+      available_control_modes_.emplace_back(m);
+    }
   }
 
   // Services Callbacks

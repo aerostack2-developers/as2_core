@@ -55,6 +55,8 @@
 #include "rclcpp/publisher_options.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_srvs/srv/set_bool.hpp"
+#include "yaml_utils/yaml_utils.hpp"
+#include "control_mode_utils/control_mode_utils.hpp"
 
 #define AS2_PLATFORM_INFO_PUB_FREQ_HZ 10
 
