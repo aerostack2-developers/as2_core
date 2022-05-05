@@ -64,7 +64,6 @@ namespace as2
     }
 
     this->loadControlModes(parameters_.control_modes_file);
-    RCLCPP_INFO(this->get_logger(), parameters_.control_modes_file);
 
     pose_command_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
         this->generate_global_name(as2_names::topics::actuator_command::pose),
@@ -127,8 +126,7 @@ namespace as2
         &AerialPlatform::listControlModesSrvCall, this,
         std::placeholders::_1, // Corresponds to the 'request'  input
         std::placeholders::_2  // Corresponds to the 'response' input
-      )
-    );
+    ));
 
     platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
         this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
@@ -136,7 +134,7 @@ namespace as2
     platform_info_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int64_t)(1000.0f / AS2_PLATFORM_INFO_PUB_FREQ_HZ)),
         std::bind(&AerialPlatform::publishPlatformInfo, this));
-  };
+  }
 
   bool AerialPlatform::setArmingState(bool state)
   {
@@ -165,7 +163,7 @@ namespace as2
       }
     }
     return false;
-  };
+  }
 
   bool AerialPlatform::setOffboardControl(bool offboard)
   {
@@ -186,18 +184,12 @@ namespace as2
       }
     }
     return false;
-  };
-
-  // as2_msgs::msg::PlatformInfo AerialPlatform::setPlatformInfo()
-  // {
-  //   platform_info_msg_ = *(ownSetPlatformInfo().get());
-  //   return platform_info_msg_;
-  // };
+  }
 
   bool AerialPlatform::setPlatformControlMode(const as2_msgs::msg::ControlMode &msg)
   {
     return ownSetPlatformControlMode(msg);
-  };
+  }
 
   bool AerialPlatform::sendCommand()
   {
@@ -210,11 +202,12 @@ namespace as2
     {
       return ownSendCommand();
     }
-  };
+  }
 
-  void AerialPlatform::loadControlModes(const std::string & filename){
+  void AerialPlatform::loadControlModes(const std::string &filename)
+  {
     std::vector<std::string> modes = as2::find_tag_in_yaml_file(filename, "available_modes");
-    
+
     for (std::vector<std::string>::iterator it = modes.begin(); it != modes.end(); ++it)
     {
       uint8_t m = as2::parse_uint_from_string(it->c_str());
@@ -224,7 +217,6 @@ namespace as2
   }
 
   // Services Callbacks
-
   void AerialPlatform::setPlatformControlModeSrvCall(
       const std::shared_ptr<as2_msgs::srv::SetControlMode::Request> request,
       std::shared_ptr<as2_msgs::srv::SetControlMode::Response> response)
@@ -239,7 +231,7 @@ namespace as2
     {
       platform_info_msg_.current_control_mode = request->control_mode;
     }
-  };
+  }
 
   void AerialPlatform::setOffboardModeSrvCall(
       const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
@@ -277,7 +269,7 @@ namespace as2
     {
       RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO TAKE OFF");
     }
-  };
+  }
 
   void AerialPlatform::platformLandSrvCall(
       const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
@@ -293,7 +285,7 @@ namespace as2
     {
       RCLCPP_ERROR(this->get_logger(), "ERROR: UNABLE TO LAND");
     }
-  };
+  }
 
   void AerialPlatform::listControlModesSrvCall(
       const std::shared_ptr<as2_msgs::srv::ListControlModes::Request> request,

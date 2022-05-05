@@ -6,3 +6,5 @@ logs/
 doxygen/
 .cache/
 compile_commands.json
+*.zip
+*.tar

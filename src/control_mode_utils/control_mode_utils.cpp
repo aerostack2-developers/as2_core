@@ -159,64 +159,65 @@ void printControlMode(const as2_msgs::msg::ControlMode& mode) {
   std::cout << "Control mode: ";
   switch (mode.control_mode) {
     case as2_msgs::msg::ControlMode::UNSET: {
-      std::cout << "UNSET" << std::endl;
+      std::cout << "UNSET " << std::endl;
       return;
     } break;
     case as2_msgs::msg::ControlMode::HOVER: {
-      std::cout << "HOVER" << std::endl;
+      std::cout << "HOVER " << std::endl;
       return;
     } break;
     case as2_msgs::msg::ControlMode::ACRO:
-      std::cout << "ACRO" << std::endl;
+      std::cout << "ACRO ";
       break;
     case as2_msgs::msg::ControlMode::ATTITUDE:
-      std::cout << "ATTITUDE" << std::endl;
+      std::cout << "ATTITUDE ";
       break;
     case as2_msgs::msg::ControlMode::SPEED:
-      std::cout << "SPEED" << std::endl;
+      std::cout << "SPEED ";
       break;
     case as2_msgs::msg::ControlMode::SPEED_IN_A_PLANE:
-      std::cout << "SPEED_IN_A_PLANE" << std::endl;
+      std::cout << "SPEED_IN_A_PLANE ";
       break;
     case as2_msgs::msg::ControlMode::POSITION:
-      std::cout << "POSITION" << std::endl;
+      std::cout << "POSITION ";
       break;
     case as2_msgs::msg::ControlMode::TRAJECTORY:
-      std::cout << "TRAJECTORY" << std::endl;
+      std::cout << "TRAJECTORY ";
       break;
     default:
       std::cout << "Control mode not recognized" << std::endl;
       break;
   }
 
-  std::cout << "\t\tYaw mode: ";
+  // std::cout << "\t\tYaw mode: ";
   switch (mode.yaw_mode) {
     case as2_msgs::msg::ControlMode::YAW_SPEED:
-      std::cout << "YAW_SPEED" << std::endl;
+      std::cout << "YAW_SPEED ";
       break;
     case as2_msgs::msg::ControlMode::YAW_ANGLE:
-      std::cout << "YAW_ANGLE" << std::endl;
+      std::cout << "YAW_ANGLE ";
       break;
     default:
       std::cout << "Yaw mode not recognized" << std::endl;
       break;
   }
 
-  std::cout << "\t\tReference frame: ";
+  // std::cout << "\t\tReference frame: ";
   switch (mode.reference_frame) {
     case as2_msgs::msg::ControlMode::LOCAL_ENU_FRAME:
-      std::cout << "LOCAL_ENU_FRAME" << std::endl;
+      std::cout << "LOCAL_ENU_FRAME ";
       break;
     case as2_msgs::msg::ControlMode::GLOBAL_LAT_LONG_ASML:
-      std::cout << "GLOBAL_LAT_LONG_ASML" << std::endl;
+      std::cout << "GLOBAL_LAT_LONG_ASML ";
       break;
     case as2_msgs::msg::ControlMode::BODY_FLU_FRAME:
-      std::cout << "BODY_FLU_FRAME" << std::endl;
+      std::cout << "BODY_FLU_FRAME ";
       break;
     default:
       std::cout << "Reference frame not recognized" << std::endl;
       break;
   }
+  std::cout << std::endl;
 }
 
 void printControlMode(uint8_t control_mode_uint8t) {

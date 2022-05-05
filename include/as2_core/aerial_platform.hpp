@@ -78,7 +78,6 @@ struct AerialPlatformParameters {
 // TODO: Validate all the system in Pixhawk Class
 class AerialPlatform : public as2::Node {
   private:
-  // bool control_mode_settled_ = false;
   bool sending_commands_ = false;
 
   as2::AerialPlatformParameters parameters_;
