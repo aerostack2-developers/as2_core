@@ -28,6 +28,8 @@ set(PROJECT_DEPENDENCIES
   rclcpp_lifecycle
   rclcpp_action
   yaml-cpp
+  image_transport
+  # cv_bridge
 )
 
 foreach(DEPENDENCY ${PROJECT_DEPENDENCIES})

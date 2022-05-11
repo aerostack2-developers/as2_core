@@ -23,6 +23,9 @@
 #include "sensor_msgs/msg/fluid_pressure.hpp"
 #include "sensor_msgs/msg/range.hpp"
 
+// camera
+#include <image_transport/image_transport.hpp>
+
 // TODO ADD CAMERA SUPPORT
 
 namespace as2
@@ -66,7 +69,7 @@ namespace as2
 
         if (this->pub_freq_ != -1)
         {
-          timer_ = node_ptr_->create_wall_timer(std::chrono::milliseconds(1000/pub_freq), [this]()
+          timer_ = node_ptr_->create_wall_timer(std::chrono::milliseconds(1000 / pub_freq), [this]()
                                                 { publishData(); });
         }
       }
@@ -84,7 +87,8 @@ namespace as2
       }
 
     private:
-      void publishData() { 
+      void publishData()
+      {
         this->sensor_publisher_->publish(msg_data_);
       }
       void publishData(const T &msg) { this->sensor_publisher_->publish(msg); }
@@ -95,31 +99,32 @@ namespace as2
 
     }; // class Sensor
 
-    class Camera : public GenericSensor
+    class Camera : public GenericSensor, std::enable_shared_from_this<rclcpp::Node>
     {
-      Camera(const std::string &id, as2::Node *node_ptr) : GenericSensor(id, node_ptr)
-      {
-        image_publisher_ = node_ptr_->create_publisher<sensor_msgs::msg::Image>(this->topic_name_, 10);
-        camera_info_publisher_ =
-            node_ptr_->create_publisher<sensor_msgs::msg::CameraInfo>(this->topic_name_ + "/info", 10);
-      }
+    public:
+      Camera(const std::string &id, as2::Node *node_ptr);
+      ~Camera();
 
-      // TODO
-      void publishData(const sensor_msgs::msg::Image &msg)
-      {
-        this->image_publisher_->publish(msg);
-        this->camera_info_publisher_->publish(this->camera_info_data_);
-      }
+      void setup();
+      void updateData(const sensor_msgs::msg::Image &_img);
+      void publishCameraData(const sensor_msgs::msg::Image &msg); // private
+      void loadParameters(const std::string &file);
 
-      void publishRectifiedImage(const sensor_msgs::msg::Image &msg){};
-      void publishCompressedImage(const sensor_msgs::msg::Image &msg){};
+      void publishRectifiedImage(const sensor_msgs::msg::Image &msg);
+      void publishCompressedImage(const sensor_msgs::msg::Image &msg);
 
     private:
       rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher_;
       rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_publisher_;
+      std::shared_ptr<image_transport::ImageTransport> image_transport_ptr_ = nullptr;
+      image_transport::Publisher it_publisher_;
 
       sensor_msgs::msg::Image image_data_;
       sensor_msgs::msg::CameraInfo camera_info_data_;
+
+      std::shared_ptr<rclcpp::Node> getSelfPtr();
+
+      bool setup_ = true;
 
     }; // class CameraSensor
 
