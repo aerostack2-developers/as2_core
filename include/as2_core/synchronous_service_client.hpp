@@ -13,9 +13,10 @@ class SynchronousServiceClient {
   typedef typename ServiceT::Request RequestT;
   typedef typename ServiceT::Response ResponseT;
   std::string service_name_;
+  std::string node_name_;
 
   typename rclcpp::Client<ServiceT>::SharedPtr client;
-  rclcpp::Node::SharedPtr node;
+  // rclcpp::Node::SharedPtr node;
 
   public:
 
@@ -23,11 +24,9 @@ class SynchronousServiceClient {
 
   SynchronousServiceClient(std::string service_name) {
     service_name_ = service_name;
-    std::string node_name = service_name;
+    node_name_ = service_name;
     // replace all '/' with '_' in name
-    std::replace(node_name.begin(), node_name.end(), '/', '_');
-    node = rclcpp::Node::make_shared(node_name);
-    client = node->create_client<ServiceT>(service_name_);
+    std::replace(node_name_.begin(), node_name_.end(), '/', '_');
   }
 
   ResponseT sendRequest(const RequestT &req) {
@@ -41,6 +40,8 @@ class SynchronousServiceClient {
   // }
 
   ResponseT sendRequest(const std::shared_ptr<RequestT> &req_ptr) {
+    auto node = std::make_shared<rclcpp::Node>(node_name_);
+    client = node->create_client<ServiceT>(service_name_);
     while (!client->wait_for_service(std::chrono::seconds(1))) {
       RCLCPP_INFO(node->get_logger(), "waiting for service ok");
       if (!rclcpp::ok()) {
