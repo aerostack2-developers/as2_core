@@ -109,9 +109,10 @@ namespace as2
       void updateData(const sensor_msgs::msg::Image &_img);
       void publishCameraData(const sensor_msgs::msg::Image &msg); // private
       void loadParameters(const std::string &file);
+      void setParameters(const sensor_msgs::msg::CameraInfo &_camera_info);
 
       void publishRectifiedImage(const sensor_msgs::msg::Image &msg);
-      void publishCompressedImage(const sensor_msgs::msg::Image &msg);
+      // void publishCompressedImage(const sensor_msgs::msg::Image &msg);
 
     private:
       rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher_;
@@ -125,6 +126,7 @@ namespace as2
       std::shared_ptr<rclcpp::Node> getSelfPtr();
 
       bool setup_ = true;
+      bool camera_info_available_ = false;
 
     }; // class CameraSensor
 
