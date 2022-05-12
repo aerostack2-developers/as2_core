@@ -30,7 +30,9 @@ namespace as2_names
         }
         namespace motion_reference
         {
-            const std::string send_traj_wayp = "";
+            const std::string send_traj_wayp = "traj_gen/send_traj_wayp";
+            const std::string add_traj_wayp = "traj_gen/add_traj_wayp";
+            const std::string set_traj_speed = "traj_gen/set_traj_speed";
         }
         namespace gps
         {
