@@ -260,7 +260,7 @@ namespace as2
       if (loop_rate_ptr_)
       {
         RCLCPP_INFO(this->get_logger(),
-                    "Preset Loop Frequency [%d Hz] was overwrite to launcher params to %d",
+                    "Preset Loop Frequency [%d Hz] was overwrite by launcher params to %d",
                     (int)frequency, (int)loop_frequency_);
         return false;
       }

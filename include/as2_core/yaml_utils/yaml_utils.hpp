@@ -75,7 +75,6 @@ namespace as2
       YAML::Node tag_node = find_tag_in_yaml_node(node, tag);
       if (!tag_node.IsNull())
       {
-        std::cout << "Found tag: " << tag << " in file: " << yaml_file.string() << std::endl;
         for (const auto &tag_value : tag_node)
         {
           result.push_back(tag_value.as<T>());

@@ -79,14 +79,13 @@ namespace as2
   private:
     rclcpp_action::GoalResponse handleGoal(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const typename MessageT::Goal> goal)
     {
-      RCLCPP_INFO(this->get_logger(), "Received goal request with UUID: %d", uuid);
-      // (void)uuid;
+      RCLCPP_DEBUG(this->get_logger(), "Received goal request with UUID: %d", uuid);
       return onAccepted(goal);
     }
 
     rclcpp_action::CancelResponse handleCancel(const std::shared_ptr<GoalHandleAction> goal_handle)
     {
-      RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
+      RCLCPP_INFO(this->get_logger(), "Request to cancel goal received");
       return onCancel(goal_handle);
     };
 

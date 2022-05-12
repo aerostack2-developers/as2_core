@@ -3,7 +3,7 @@
 <package format="3">
   <name>as2_core</name>
   <version>0.1.0</version>
-  <description>---------------TODO: Package description---------------</description>
+  <description>Aerostack2 core package which contains the basic classes of the Aerostack2 framework</description>
   <maintainer email="cvar.upm3@gmail.com">Computer Vision And Aerial Robotics Group (UPM)</maintainer>
   <license>BSD-3-Clause</license>
 

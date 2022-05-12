@@ -1,9 +1,10 @@
 # as2_core
 
+Core repository for the aerostack2 framework
 
-For generating doxygen files
 
-In as2_core folder:
-...
+```
+# For generating documentation run the following command:
+$ cd $AEROSTACK2_STACK/stack/core/as2_core
 $ doxygen doxygen.dox
-...
+```

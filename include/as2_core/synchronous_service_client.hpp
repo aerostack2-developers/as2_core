@@ -103,7 +103,7 @@ namespace as2
             RCLCPP_ERROR(node->get_logger(), "interrupted while waiting for the service. exiting.");
             return false;
           }
-          RCLCPP_INFO(node->get_logger(), "service: %s not available, returning False ",
+          RCLCPP_WARN(node->get_logger(), "service: %s not available, returning False ",
                       service_name_.c_str());
           return false;
         }
@@ -113,8 +113,8 @@ namespace as2
       if (rclcpp::spin_until_future_complete(node, result, std::chrono::seconds(1)) !=
           rclcpp::FutureReturnCode::SUCCESS)
       {
-        RCLCPP_ERROR(node->get_logger(), "failed to receive response from service '%s'",
-                     service_name_.c_str());
+        RCLCPP_WARN(node->get_logger(), "failed to receive response from service '%s'",
+                    service_name_.c_str());
         return false;
       }
 

@@ -55,6 +55,7 @@ namespace as2
         run_function();
       if (!node->sleep())
       {
+        // TODO: fix this
         // if sleep returns false, it means that loop rate cannot keep up with the desired rate
         // RCLCPP_INFO(
         //   node->get_logger(),

@@ -140,11 +140,11 @@ namespace as2
   {
     if (state == platform_info_msg_.armed && state == true)
     {
-      RCLCPP_INFO(this->get_logger(), "UAV is already armed");
+      RCLCPP_WARN(this->get_logger(), "UAV is already armed");
     }
     else if (state == platform_info_msg_.armed && state == false)
     {
-      RCLCPP_INFO(this->get_logger(), "UAV is already disarmed");
+      RCLCPP_WARN(this->get_logger(), "UAV is already disarmed");
     }
     else
     {
@@ -169,11 +169,11 @@ namespace as2
   {
     if (offboard == platform_info_msg_.offboard && offboard == true)
     {
-      RCLCPP_INFO(this->get_logger(), "UAV is already in OFFBOARD mode");
+      RCLCPP_WARN(this->get_logger(), "UAV is already in OFFBOARD mode");
     }
     else if (offboard == platform_info_msg_.offboard && offboard == false)
     {
-      RCLCPP_INFO(this->get_logger(), "UAV is already in MANUAL mode");
+      RCLCPP_WARN(this->get_logger(), "UAV is already in MANUAL mode");
     }
     else
     {

@@ -91,7 +91,7 @@ namespace as2
       YAML::Node available_modes_node = as2::find_tag_in_yaml_node(config, tag);
       if (available_modes_node != YAML::Node())
       {
-        std::cout << "Found tag: " << tag << " in file: " << yaml_file.string() << std::endl;
+
         return available_modes_node;
       }
     }
