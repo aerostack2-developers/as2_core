@@ -40,12 +40,25 @@ class SynchronousServiceClient {
     auto node = std::make_shared<rclcpp::Node>(node_name_);
     auto client = node->create_client<ServiceT>(service_name_);
 
-    while (!client->wait_for_service(std::chrono::seconds(1))) {
-      if (!rclcpp::ok()) {
-        RCLCPP_ERROR(node->get_logger(), "interrupted while waiting for the service. exiting.");
+    if (wait_time <= 0) {
+      while (!client->wait_for_service(std::chrono::seconds(1))) {
+        if (!rclcpp::ok()) {
+          RCLCPP_ERROR(node->get_logger(), "interrupted while waiting for the service. exiting.");
+          return false;
+        }
+        RCLCPP_INFO(node->get_logger(), "service: %s not available, waiting again...",
+                    service_name_.c_str());
       }
-      RCLCPP_INFO(node->get_logger(), "service: %s not available, waiting again...",
-                  service_name_.c_str());
+    } else {
+      if (!client->wait_for_service(std::chrono::seconds(wait_time))) {
+        if (!rclcpp::ok()) {
+          RCLCPP_ERROR(node->get_logger(), "interrupted while waiting for the service. exiting.");
+          return false;
+        }
+        RCLCPP_INFO(node->get_logger(), "service: %s not available, returning False ",
+                    service_name_.c_str());
+        return false;
+      }
     }
 
     auto result = client->async_send_request(req);
@@ -55,12 +68,13 @@ class SynchronousServiceClient {
                    service_name_.c_str());
       return false;
     }
+
     resp = result.get();
     return true;
-  }
+  }  // namespace as2
 
   protected:
-};
+};  // namespace as2
 
 }  // namespace as2
 #endif
