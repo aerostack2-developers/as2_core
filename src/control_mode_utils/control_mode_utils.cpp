@@ -193,18 +193,16 @@ as2_msgs::msg::ControlMode convertUint8tToAS2ControlMode(uint8_t control_mode_ui
   return mode;
 }
 
-void printControlMode(const as2_msgs::msg::ControlMode &mode) {
+std::string controlModeToString(const as2_msgs::msg::ControlMode& mode) {
   std::stringstream ss;
-
-  ss << "Control mode: ";
   switch (mode.control_mode) {
     case as2_msgs::msg::ControlMode::UNSET: {
       ss << "UNSET " << std::endl;
-      return;
+      return ss.str();
     } break;
     case as2_msgs::msg::ControlMode::HOVER: {
       ss << "HOVER " << std::endl;
-      return;
+      return ss.str();
     } break;
     case as2_msgs::msg::ControlMode::ACRO:
       ss << "ACRO ";
@@ -257,9 +255,16 @@ void printControlMode(const as2_msgs::msg::ControlMode &mode) {
       ss << "Reference frame not recognized" << std::endl;
       break;
   }
-  ss << std::endl;
+  return ss.str();
+}
 
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("as2_mode"), ss.str());
+std::string controlModeToString(const uint8_t control_mode_uint8t) {
+  as2_msgs::msg::ControlMode mode = convertUint8tToAS2ControlMode(control_mode_uint8t);
+  return controlModeToString(mode);
+}
+
+void printControlMode(const as2_msgs::msg::ControlMode &mode) {
+  RCLCPP_INFO(rclcpp::get_logger("as2_mode"), "Control mode: %s", controlModeToString(mode).c_str());
 }
 
 void printControlMode(uint8_t control_mode_uint8t) {

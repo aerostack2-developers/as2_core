@@ -85,6 +85,9 @@ namespace as2
   uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode &mode);
   as2_msgs::msg::ControlMode convertUint8tToAS2ControlMode(uint8_t control_mode_uint8t);
 
+  std::string controlModeToString(const uint8_t control_mode_uint8t);
+  std::string controlModeToString(const as2_msgs::msg::ControlMode& mode);
+
   void printControlMode(const as2_msgs::msg::ControlMode &mode);
   void printControlMode(uint8_t control_mode_uint8t);
 
