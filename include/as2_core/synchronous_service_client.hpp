@@ -1,6 +1,7 @@
 #ifndef __SYNCHRONOUS_SERVICE_CLIENT_HPP__
 #define __SYNCHRONOUS_SERVICE_CLIENT_HPP__
 
+#include <memory>
 #include <string>
 
 #include "as2_core/node.hpp"
@@ -15,11 +16,7 @@ class SynchronousServiceClient {
   std::string service_name_;
   std::string node_name_;
 
-  typename rclcpp::Client<ServiceT>::SharedPtr client;
-  // rclcpp::Node::SharedPtr node;
-
   public:
-
   using SharedPtr = std::shared_ptr<SynchronousServiceClient<ServiceT>>;
 
   SynchronousServiceClient(std::string service_name) {
@@ -29,34 +26,37 @@ class SynchronousServiceClient {
     std::replace(node_name_.begin(), node_name_.end(), '/', '_');
   }
 
-  ResponseT sendRequest(const RequestT &req) {
-    return sendRequest(std::make_shared<RequestT>(req));
-  }
+  bool sendRequest(const RequestT &req, ResponseT &resp, int wait_time = 0) {
+    auto resp_ptr = std::make_shared<ResponseT>(resp);
+    if (!sendRequest(std::make_shared<RequestT>(req), resp_ptr, wait_time)) {
+      return false;
+    }
+    resp = *resp_ptr.get();
+    return true;
+  };
 
-  // ResponseT sendRequest(const std::shared_ptr<RequestT> &req_ptr) {
-  //   auto result = client->async_send_request(req_ptr);
-  //   rclcpp::spin_until_future_complete(node, result);
-  //   return *result.get();
-  // }
-
-  ResponseT sendRequest(const std::shared_ptr<RequestT> &req_ptr) {
+  bool sendRequest(const std::shared_ptr<RequestT> &req, std::shared_ptr<ResponseT> &resp,
+                   int wait_time = 0) {
     auto node = std::make_shared<rclcpp::Node>(node_name_);
-    client = node->create_client<ServiceT>(service_name_);
+    auto client = node->create_client<ServiceT>(service_name_);
+
     while (!client->wait_for_service(std::chrono::seconds(1))) {
-      RCLCPP_INFO(node->get_logger(), "waiting for service ok");
       if (!rclcpp::ok()) {
         RCLCPP_ERROR(node->get_logger(), "interrupted while waiting for the service. exiting.");
       }
       RCLCPP_INFO(node->get_logger(), "service: %s not available, waiting again...",
                   service_name_.c_str());
     }
-    auto result = client->async_send_request(req_ptr);
+
+    auto result = client->async_send_request(req);
     if (rclcpp::spin_until_future_complete(node, result, std::chrono::seconds(1)) !=
         rclcpp::FutureReturnCode::SUCCESS) {
       RCLCPP_ERROR(node->get_logger(), "failed to receive response from service '%s'",
                    service_name_.c_str());
+      return false;
     }
-    return *result.get();
+    resp = result.get();
+    return true;
   }
 
   protected:
