@@ -183,12 +183,14 @@ class AerialPlatform : public as2::Node {
    */
   bool setPlatformControlMode(const as2_msgs::msg::ControlMode& msg);
 
+  protected:
   /**
    * @brief Send command to the platform.
    * @return true if the command was sent successfully, false otherwise
    */
   bool sendCommand();
 
+  private:
   void loadControlModes(const std::string & filename);
 
   // Getters
