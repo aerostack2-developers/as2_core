@@ -1,13 +1,16 @@
 /*!*******************************************************************************************
  *  \file       node.cpp
  *  \brief      Aerostack2 node implementation file.
- *  \authors    Miguel Fernandez Cortizas
- *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
+ *  \authors    Miguel Fernández Cortizas
+ *              Pedro Arias Pérez
+ *              David Pérez Saura
+ *              Rafael Pérez Seguí
+ *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
  *              All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -16,7 +19,7 @@
  * 3. Neither the name of the copyright holder nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -32,20 +35,26 @@
 
 #include "as2_core/node.hpp"
 
-std::string as2::Node::generate_global_name(const std::string & name)
+std::string as2::Node::generate_global_name(const std::string &name)
 {
-  if (name.find("/") == 0) {
+  if (name.find("/") == 0)
+  {
     return name.substr(1);
-  } else {
+  }
+  else
+  {
     return name;
   }
 };
 
-std::string as2::Node::generate_local_name(const std::string & name)
+std::string as2::Node::generate_local_name(const std::string &name)
 {
-  if (name.find("/") == 0) {
+  if (name.find("/") == 0)
+  {
     return this->get_name() + name;
-  } else {
+  }
+  else
+  {
     return std::string(this->get_name()) + "/" + name;
   }
 };

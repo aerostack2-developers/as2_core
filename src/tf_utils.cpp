@@ -2,7 +2,7 @@
  *  \file       tf_utils.cpp
  *  \brief      Tranform utilities library implementation file.
  *  \authors    David Perez Saura
- *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
+ *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
  *              All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without

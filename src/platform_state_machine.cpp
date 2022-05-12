@@ -2,7 +2,7 @@
  *  \file       platform_state_machine.cpp
  *  \brief      Aerostack2 Platform State Machine implementation file.
  *  \authors    Miguel Fernandez Cortizas
- *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
+ *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
  *              All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ namespace as2
     }
 
     state_.state = transition.to_state_id;
-    RCLCPP_INFO(node_ptr_->get_logger(), "Transition [%s] : New State [%s]", 
+    RCLCPP_INFO(node_ptr_->get_logger(), "Transition [%s] : New State [%s]",
                 transition.transition_name.c_str(), stateToString(transition.to_state_id).c_str());
 
     return true;

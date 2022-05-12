@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-set(PROJECT_NAME as2_core)
+set(PROJECT_NAME as2_core VERSION 0.1.0)
 project(${PROJECT_NAME})
 
 # Default to C++17
@@ -36,11 +36,6 @@ foreach(DEPENDENCY ${PROJECT_DEPENDENCIES})
   find_package(${DEPENDENCY} REQUIRED)
 endforeach()
 
-
-
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
 include_directories(
   include
   include/${PROJECT_NAME}
@@ -51,18 +46,12 @@ set(SOURCE_CPP_FILES
   src/sensor.cpp
   src/aerial_platform.cpp
   src/platform_state_machine.cpp
-  src/utils.cpp
   src/tf_utils.cpp
   src/rate.cpp
   src/core_functions.cpp
   src/control_mode_utils/control_mode_utils.cpp
   src/yaml_utils/yaml_utils.cpp
 )
-
-# set(INCLUDE_HPP_FILES 
-#   include/${PROJECT_NAME}/core_libs.hpp
-
-# )
 
 add_library(${PROJECT_NAME} ${SOURCE_CPP_FILES} )
 target_link_libraries(${PROJECT_NAME} yaml-cpp)
@@ -78,16 +67,11 @@ ament_export_dependencies(${PROJECT_DEPENDENCIES})
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 
-# add_executable(platform_state_machine_test tests/platform_state_machine_test.cpp src/platform_state_machine.cpp)
-# target_link_libraries(platform_state_machine_test ${PROJECT_NAME}) 
-
 
 if(BUILD_TESTING)
-  # find_package(ament_cmake_cpplint REQUIRED)
   find_package(ament_cmake_cppcheck REQUIRED)
   find_package(ament_cmake_clang_format REQUIRED)
   
-  # ament_cpplint(src/ include/)
   ament_cppcheck(src/ include/ tests/)
   ament_clang_format(src/ include/ tests/)
 
@@ -110,10 +94,4 @@ install(
   INCLUDES DESTINATION include
 )
 
-    
-    # if(BUILD_TESTING)
-    #   find_package(ament_lint_auto REQUIRED)
-    #   ament_lint_auto_find_test_dependencies()
-    # endif()
-    
 ament_package()

@@ -1,35 +1,73 @@
+/*!*******************************************************************************************
+ *  \file       control_mode_utils.cpp
+ *  \brief      Utility functions for handling control modes over the aerostack2 framework (implementation).
+ *  \authors    Miguel Fernández Cortizas
+ *              Pedro Arias Pérez
+ *              David Pérez Saura
+ *              Rafael Pérez Seguí
+ *
+ *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
+ *              All Rights Reserved
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ********************************************************************************/
+
 #include "as2_core/control_mode_utils/control_mode_utils.hpp"
 
-namespace as2 {
+namespace as2
+{
 
+  uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode &mode)
+  {
+    // # ------------- mode codification (4 bits) ----------------------
+    // #
+    // # unset             = 0 = 0b00000000
+    // # hover             = 1 = 0b00010000
+    // # acro              = 2 = 0b00100000
+    // # attitude          = 3 = 0b00110000
+    // # speed             = 4 = 0b01000000
+    // # speed_in_a_plane  = 5 = 0b01010000
+    // # position          = 6 = 0b01100000
+    // # trajectory        = 7 = 0b01110000
+    // #
+    // #-------------- yaw codification --------------------------------
+    // #
+    // # angle             = 0 = 0b00000000
+    // # speed             = 1 = 0b00000100
+    // #
+    // # frame codification
+    // #
+    // # local_frame_flu   = 0 = 0b00000000
+    // # global_frame_enu  = 1 = 0b00000001
+    // # global_frame_lla  = 2 = 0b00000010
+    // #
+    // #-----------------------------------------------------------------
 
-uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode& mode) {
-  // # ------------- mode codification (4 bits) ----------------------
-  // #
-  // # unset             = 0 = 0b00000000
-  // # hover             = 1 = 0b00010000
-  // # acro              = 2 = 0b00100000
-  // # attitude          = 3 = 0b00110000
-  // # speed             = 4 = 0b01000000
-  // # speed_in_a_plane  = 5 = 0b01010000
-  // # position          = 6 = 0b01100000
-  // # trajectory        = 7 = 0b01110000
-  // #
-  // #-------------- yaw codification --------------------------------
-  // #
-  // # angle             = 0 = 0b00000000
-  // # speed             = 1 = 0b00000100
-  // #
-  // # frame codification
-  // #
-  // # local_frame_flu   = 0 = 0b00000000
-  // # global_frame_enu  = 1 = 0b00000001
-  // # global_frame_lla  = 2 = 0b00000010
-  // #
-  // #-----------------------------------------------------------------
-
-  uint8_t control_mode_uint8t = 0;
-  switch (mode.control_mode) {
+    uint8_t control_mode_uint8t = 0;
+    switch (mode.control_mode)
+    {
     case as2_msgs::msg::ControlMode::ACRO:
       control_mode_uint8t = 0b00100000;
       break;
@@ -57,9 +95,10 @@ uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode& mode) {
     default:
       std::cout << "Control mode not recognized" << std::endl;
       break;
-  }
+    }
 
-  switch (mode.yaw_mode) {
+    switch (mode.yaw_mode)
+    {
     case as2_msgs::msg::ControlMode::YAW_ANGLE:
       control_mode_uint8t |= 0b00000000;
       break;
@@ -69,9 +108,10 @@ uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode& mode) {
     default:
       std::cout << "Yaw mode not recognized" << std::endl;
       break;
-  }
+    }
 
-  switch (mode.reference_frame) {
+    switch (mode.reference_frame)
+    {
     case as2_msgs::msg::ControlMode::BODY_FLU_FRAME:
       control_mode_uint8t |= 0b00000000;
       break;
@@ -84,88 +124,124 @@ uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode& mode) {
     default:
       std::cout << "Reference frame not recognized" << std::endl;
       break;
-  }
-  return control_mode_uint8t;
-}
-
-as2_msgs::msg::ControlMode convertUint8tToAS2ControlMode(uint8_t control_mode_uint8t) {
-  as2_msgs::msg::ControlMode mode;
-  // # ------------- mode codification (4 bits) ----------------------
-  // #
-  // # unset             = 0 = 0b00000000
-  // # hover             = 1 = 0b00010000
-  // # acro              = 2 = 0b00100000
-  // # attitude          = 3 = 0b00110000
-  // # speed             = 4 = 0b01000000
-  // # speed_in_a_plane  = 5 = 0b01010000
-  // # position          = 6 = 0b01100000
-  // # trajectory        = 7 = 0b01110000
-  // #
-  // #-------------- yaw codification --------------------------------
-  // #
-  // # angle             = 0 = 0b00000000
-  // # speed             = 1 = 0b00000100
-  // #
-  // # frame codification
-  // #
-  // # local_frame_flu   = 0 = 0b00000000
-  // # global_frame_enu  = 1 = 0b00000001
-  // # global_frame_lla  = 2 = 0b00000010
-  // #
-  // #-----------------------------------------------------------------
-
-  if ((control_mode_uint8t & 0b11110000) == 0b00000000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::UNSET;
-  } else if ((control_mode_uint8t & 0b11110000) == 0b00010000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::HOVER;
-  } else if ((control_mode_uint8t & 0b11110000) == 0b00100000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::ACRO;
-  } else if ((control_mode_uint8t & 0b11110000) == 0b00110000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::ATTITUDE;
-  } else if ((control_mode_uint8t & 0b11110000) == 0b01000000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::SPEED;
-  } else if ((control_mode_uint8t & 0b11110000) == 0b01010000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::SPEED_IN_A_PLANE;
-  } else if ((control_mode_uint8t & 0b11110000) == 0b01100000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::POSITION;
-  } else if ((control_mode_uint8t & 0b11110000) == 0b01110000) {
-    mode.control_mode = as2_msgs::msg::ControlMode::TRAJECTORY;
-  } else {
-    std::cout << "Control mode not recognized" << std::endl;
+    }
+    return control_mode_uint8t;
   }
 
-  if ((control_mode_uint8t & 0b00001100) == 0b00000100) {
-    mode.yaw_mode = as2_msgs::msg::ControlMode::YAW_SPEED;
-  } else if ((control_mode_uint8t & 0b00000110) == 0b00000000) {
-    mode.yaw_mode = as2_msgs::msg::ControlMode::YAW_ANGLE;
-  } else {
-    std::cout << "Yaw mode not recognized" << std::endl;
+  as2_msgs::msg::ControlMode convertUint8tToAS2ControlMode(uint8_t control_mode_uint8t)
+  {
+    as2_msgs::msg::ControlMode mode;
+    // # ------------- mode codification (4 bits) ----------------------
+    // #
+    // # unset             = 0 = 0b00000000
+    // # hover             = 1 = 0b00010000
+    // # acro              = 2 = 0b00100000
+    // # attitude          = 3 = 0b00110000
+    // # speed             = 4 = 0b01000000
+    // # speed_in_a_plane  = 5 = 0b01010000
+    // # position          = 6 = 0b01100000
+    // # trajectory        = 7 = 0b01110000
+    // #
+    // #-------------- yaw codification --------------------------------
+    // #
+    // # angle             = 0 = 0b00000000
+    // # speed             = 1 = 0b00000100
+    // #
+    // # frame codification
+    // #
+    // # local_frame_flu   = 0 = 0b00000000
+    // # global_frame_enu  = 1 = 0b00000001
+    // # global_frame_lla  = 2 = 0b00000010
+    // #
+    // #-----------------------------------------------------------------
+
+    if ((control_mode_uint8t & 0b11110000) == 0b00000000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::UNSET;
+    }
+    else if ((control_mode_uint8t & 0b11110000) == 0b00010000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::HOVER;
+    }
+    else if ((control_mode_uint8t & 0b11110000) == 0b00100000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::ACRO;
+    }
+    else if ((control_mode_uint8t & 0b11110000) == 0b00110000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::ATTITUDE;
+    }
+    else if ((control_mode_uint8t & 0b11110000) == 0b01000000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::SPEED;
+    }
+    else if ((control_mode_uint8t & 0b11110000) == 0b01010000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::SPEED_IN_A_PLANE;
+    }
+    else if ((control_mode_uint8t & 0b11110000) == 0b01100000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::POSITION;
+    }
+    else if ((control_mode_uint8t & 0b11110000) == 0b01110000)
+    {
+      mode.control_mode = as2_msgs::msg::ControlMode::TRAJECTORY;
+    }
+    else
+    {
+      std::cout << "Control mode not recognized" << std::endl;
+    }
+
+    if ((control_mode_uint8t & 0b00001100) == 0b00000100)
+    {
+      mode.yaw_mode = as2_msgs::msg::ControlMode::YAW_SPEED;
+    }
+    else if ((control_mode_uint8t & 0b00000110) == 0b00000000)
+    {
+      mode.yaw_mode = as2_msgs::msg::ControlMode::YAW_ANGLE;
+    }
+    else
+    {
+      std::cout << "Yaw mode not recognized" << std::endl;
+    }
+
+    if ((control_mode_uint8t & 0b00000011) == 0b00000001)
+    {
+      mode.reference_frame = as2_msgs::msg::ControlMode::LOCAL_ENU_FRAME;
+    }
+    else if ((control_mode_uint8t & 0b00000011) == 0b00000010)
+    {
+      mode.reference_frame = as2_msgs::msg::ControlMode::GLOBAL_LAT_LONG_ASML;
+    }
+    else if ((control_mode_uint8t & 0b00000011) == 0b00000000)
+    {
+      mode.reference_frame = as2_msgs::msg::ControlMode::BODY_FLU_FRAME;
+    }
+    else
+    {
+      std::cout << "Reference frame not recognized" << std::endl;
+    }
+
+    return mode;
   }
 
-  if ((control_mode_uint8t & 0b00000011) == 0b00000001) {
-    mode.reference_frame = as2_msgs::msg::ControlMode::LOCAL_ENU_FRAME;
-  } else if ((control_mode_uint8t & 0b00000011) == 0b00000010) {
-    mode.reference_frame = as2_msgs::msg::ControlMode::GLOBAL_LAT_LONG_ASML;
-  } else if ((control_mode_uint8t & 0b00000011) == 0b00000000) {
-    mode.reference_frame = as2_msgs::msg::ControlMode::BODY_FLU_FRAME;
-  } else {
-    std::cout << "Reference frame not recognized" << std::endl;
-  }
-
-  return mode;
-}
-
-void printControlMode(const as2_msgs::msg::ControlMode& mode) {
-  std::cout << "Control mode: ";
-  switch (mode.control_mode) {
-    case as2_msgs::msg::ControlMode::UNSET: {
+  void printControlMode(const as2_msgs::msg::ControlMode &mode)
+  {
+    std::cout << "Control mode: ";
+    switch (mode.control_mode)
+    {
+    case as2_msgs::msg::ControlMode::UNSET:
+    {
       std::cout << "UNSET " << std::endl;
       return;
-    } break;
-    case as2_msgs::msg::ControlMode::HOVER: {
+    }
+    break;
+    case as2_msgs::msg::ControlMode::HOVER:
+    {
       std::cout << "HOVER " << std::endl;
       return;
-    } break;
+    }
+    break;
     case as2_msgs::msg::ControlMode::ACRO:
       std::cout << "ACRO ";
       break;
@@ -187,10 +263,11 @@ void printControlMode(const as2_msgs::msg::ControlMode& mode) {
     default:
       std::cout << "Control mode not recognized" << std::endl;
       break;
-  }
+    }
 
-  // std::cout << "\t\tYaw mode: ";
-  switch (mode.yaw_mode) {
+    // std::cout << "\t\tYaw mode: ";
+    switch (mode.yaw_mode)
+    {
     case as2_msgs::msg::ControlMode::YAW_SPEED:
       std::cout << "YAW_SPEED ";
       break;
@@ -200,10 +277,11 @@ void printControlMode(const as2_msgs::msg::ControlMode& mode) {
     default:
       std::cout << "Yaw mode not recognized" << std::endl;
       break;
-  }
+    }
 
-  // std::cout << "\t\tReference frame: ";
-  switch (mode.reference_frame) {
+    // std::cout << "\t\tReference frame: ";
+    switch (mode.reference_frame)
+    {
     case as2_msgs::msg::ControlMode::LOCAL_ENU_FRAME:
       std::cout << "LOCAL_ENU_FRAME ";
       break;
@@ -216,12 +294,13 @@ void printControlMode(const as2_msgs::msg::ControlMode& mode) {
     default:
       std::cout << "Reference frame not recognized" << std::endl;
       break;
+    }
+    std::cout << std::endl;
   }
-  std::cout << std::endl;
-}
 
-void printControlMode(uint8_t control_mode_uint8t) {
-  printControlMode(convertUint8tToAS2ControlMode(control_mode_uint8t));
-}
+  void printControlMode(uint8_t control_mode_uint8t)
+  {
+    printControlMode(convertUint8tToAS2ControlMode(control_mode_uint8t));
+  }
 
-};  // namespace as2
+}; // namespace as2

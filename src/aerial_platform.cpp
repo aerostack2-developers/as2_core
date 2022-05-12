@@ -2,7 +2,7 @@
  *  \file       aerial_platform.cpp
  *  \brief      Aerostack2 Aerial Platformm class implementation file.
  *  \authors    Miguel Fernandez Cortizas
- *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
+ *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
  *              All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,46 +87,46 @@ namespace as2
         });
 
     set_platform_mode_srv_ = this->create_service<as2_msgs::srv::SetControlMode>(
-      as2_names::services::platform::set_platform_control_mode, std::bind(
-        &AerialPlatform::setPlatformControlModeSrvCall, this,
-        std::placeholders::_1, // Corresponds to the 'request'  input
-        std::placeholders::_2  // Corresponds to the 'response' input
-      ));
+        as2_names::services::platform::set_platform_control_mode, std::bind(
+                                                                      &AerialPlatform::setPlatformControlModeSrvCall, this,
+                                                                      std::placeholders::_1, // Corresponds to the 'request'  input
+                                                                      std::placeholders::_2  // Corresponds to the 'response' input
+                                                                      ));
 
     set_arming_state_srv_ = this->create_service<std_srvs::srv::SetBool>(
-      as2_names::services::platform::set_arming_state, std::bind(
-                                &AerialPlatform::setArmingStateSrvCall, this,
-                                std::placeholders::_1, // Corresponds to the 'request'  input
-                                std::placeholders::_2  // Corresponds to the 'response' input
-    ));
+        as2_names::services::platform::set_arming_state, std::bind(
+                                                             &AerialPlatform::setArmingStateSrvCall, this,
+                                                             std::placeholders::_1, // Corresponds to the 'request'  input
+                                                             std::placeholders::_2  // Corresponds to the 'response' input
+                                                             ));
 
     set_offboard_mode_srv_ = this->create_service<std_srvs::srv::SetBool>(
-      as2_names::services::platform::set_offboard_mode, std::bind(
-                                 &AerialPlatform::setOffboardModeSrvCall, this,
-                                 std::placeholders::_1, // Corresponds to the 'request'  input
-                                 std::placeholders::_2  // Corresponds to the 'response' input
-    ));
+        as2_names::services::platform::set_offboard_mode, std::bind(
+                                                              &AerialPlatform::setOffboardModeSrvCall, this,
+                                                              std::placeholders::_1, // Corresponds to the 'request'  input
+                                                              std::placeholders::_2  // Corresponds to the 'response' input
+                                                              ));
 
     platform_takeoff_srv_ = this->create_service<std_srvs::srv::SetBool>(
-      as2_names::services::platform::takeoff, std::bind(
-                                &AerialPlatform::platformTakeoffSrvCall, this,
-                                std::placeholders::_1, // Corresponds to the 'request'  input
-                                std::placeholders::_2  // Corresponds to the 'response' input
-    ));
+        as2_names::services::platform::takeoff, std::bind(
+                                                    &AerialPlatform::platformTakeoffSrvCall, this,
+                                                    std::placeholders::_1, // Corresponds to the 'request'  input
+                                                    std::placeholders::_2  // Corresponds to the 'response' input
+                                                    ));
 
     platform_land_srv_ = this->create_service<std_srvs::srv::SetBool>(
-      as2_names::services::platform::land, std::bind(
-                             &AerialPlatform::platformLandSrvCall, this,
-                             std::placeholders::_1, // Corresponds to the 'request'  input
-                             std::placeholders::_2  // Corresponds to the 'response' input
-    ));
+        as2_names::services::platform::land, std::bind(
+                                                 &AerialPlatform::platformLandSrvCall, this,
+                                                 std::placeholders::_1, // Corresponds to the 'request'  input
+                                                 std::placeholders::_2  // Corresponds to the 'response' input
+                                                 ));
 
     list_control_modes_srv_ = this->create_service<as2_msgs::srv::ListControlModes>(
-      as2_names::services::platform::list_control_modes, std::bind(
-        &AerialPlatform::listControlModesSrvCall, this,
-        std::placeholders::_1, // Corresponds to the 'request'  input
-        std::placeholders::_2  // Corresponds to the 'response' input
-    ));
+        as2_names::services::platform::list_control_modes, std::bind(
+                                                               &AerialPlatform::listControlModesSrvCall, this,
+                                                               std::placeholders::_1, // Corresponds to the 'request'  input
+                                                               std::placeholders::_2  // Corresponds to the 'response' input
+                                                               ));
 
     platform_info_pub_ = this->create_publisher<as2_msgs::msg::PlatformInfo>(
         this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);

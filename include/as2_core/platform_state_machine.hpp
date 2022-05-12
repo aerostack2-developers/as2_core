@@ -1,8 +1,11 @@
 /*!*******************************************************************************************
  *  \file       platform_state_machine.hpp
  *  \brief      Aerostack2 Platform State Machine Header file.
- *  \authors    Miguel Fernandez Cortizas
- *  \copyright  Copyright (c) 2021 Universidad Politécnica de Madrid
+ *  \authors    Miguel Fernández Cortizas
+ *              Pedro Arias Pérez
+ *              David Pérez Saura
+ *              Rafael Pérez Seguí
+ *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
  *              All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
