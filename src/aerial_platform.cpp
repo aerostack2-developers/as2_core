@@ -195,7 +195,8 @@ namespace as2
   {
     if (!isControlModeSettled())
     {
-      RCLCPP_ERROR(this->get_logger(), "ERROR: Platform control mode is not settled yet");
+      auto& clk = *this->get_clock();
+      RCLCPP_ERROR_THROTTLE(this->get_logger(), clk, 5000, "Platform control mode is not settled yet");
       return false;
     }
     else
