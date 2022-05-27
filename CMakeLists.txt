@@ -25,6 +25,8 @@ set(PROJECT_DEPENDENCIES
   as2_msgs
   std_srvs
   geometry_msgs
+  tf2_geometry_msgs
+  Eigen3
   rclcpp_lifecycle
   rclcpp_action
   yaml-cpp
@@ -38,6 +40,7 @@ endforeach()
 include_directories(
   include
   include/${PROJECT_NAME}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 set(SOURCE_CPP_FILES 
@@ -50,6 +53,7 @@ set(SOURCE_CPP_FILES
   src/core_functions.cpp
   src/control_mode_utils/control_mode_utils.cpp
   src/yaml_utils/yaml_utils.cpp
+  src/frame_utils/frame_utils.cpp
 )
 
 add_library(${PROJECT_NAME} ${SOURCE_CPP_FILES} )
