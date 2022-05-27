@@ -51,6 +51,7 @@ namespace as2_names
       const std::string lidar = "sensor_measurements/lidar";
       const std::string gps = "sensor_measurements/gps";
       const std::string camera = "sensor_measurements/camera";
+      const std::string battery = "sensor_measurements/battery";
     }
     namespace self_localization
     {
