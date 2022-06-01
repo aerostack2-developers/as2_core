@@ -61,8 +61,6 @@
 #include "std_srvs/srv/set_bool.hpp"
 #include "yaml_utils/yaml_utils.hpp"
 
-#define AS2_PLATFORM_INFO_PUB_FREQ_HZ 10
-
 namespace as2
 {
   // TODO: Rethink how this parameters are used and how they are set.
@@ -70,6 +68,7 @@ namespace as2
   {
     float mass;
     float max_thrust;
+    float min_thrust;
     bool simulation_mode;
     std::string control_modes_file;
   };
@@ -86,12 +85,15 @@ namespace as2
   private:
     bool sending_commands_ = false;
 
-    as2::AerialPlatformParameters parameters_;
     rclcpp::TimerBase::SharedPtr platform_info_timer_;
     as2::PlatformStateMachine state_machine_;
     std::vector<uint8_t> available_control_modes_;
 
   protected:
+    as2::AerialPlatformParameters parameters_;
+    float cmd_freq_;
+    float info_freq_;
+
     geometry_msgs::msg::PoseStamped command_pose_msg_;
     geometry_msgs::msg::TwistStamped command_twist_msg_;
     as2_msgs::msg::Thrust command_thrust_msg_;

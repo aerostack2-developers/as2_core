@@ -42,14 +42,20 @@ namespace as2
     platform_info_msg_.connected = false;
     platform_info_msg_.current_control_mode.control_mode = as2_msgs::msg::ControlMode::UNSET;
 
+    this->declare_parameter<float>("cmd_freq", 100.0);
+    this->declare_parameter<float>("info_freq", 10.0);
     this->declare_parameter<bool>("simulation_mode", false);
     this->declare_parameter<float>("mass", 1.0);
     this->declare_parameter<float>("max_thrust", 0.0);
-    this->declare_parameter<std::string>("control_modes_file", "config/control_modes.yaml");
+    this->declare_parameter<float>("min_thrust", 0.0);
+    this->declare_parameter<std::string>("control_modes_file", "config/control_modes.yaml");  // FIXME: not found
 
+    this->get_parameter("cmd_freq", cmd_freq_);
+    this->get_parameter("info_freq", info_freq_);
     this->get_parameter("simulation_mode", parameters_.simulation_mode);
     this->get_parameter("mass", parameters_.mass);
     this->get_parameter("max_thrust", parameters_.max_thrust);
+    this->get_parameter("min_thrust", parameters_.min_thrust);
     this->get_parameter("control_modes_file", parameters_.control_modes_file);
 
     RCLCPP_INFO(this->get_logger(), "simulation_mode: %d", parameters_.simulation_mode);
@@ -132,8 +138,8 @@ namespace as2
         this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
 
     platform_info_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int64_t)(1000.0f / AS2_PLATFORM_INFO_PUB_FREQ_HZ)),
-        std::bind(&AerialPlatform::publishPlatformInfo, this));
+      std::chrono::duration<double>(info_freq_),
+      std::bind(&AerialPlatform::publishPlatformInfo, this));
   }
 
   bool AerialPlatform::setArmingState(bool state)
