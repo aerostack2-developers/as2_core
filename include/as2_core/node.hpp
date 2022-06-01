@@ -80,7 +80,7 @@ namespace as2
     {
       this->declare_parameter<float>("node_frequency", -1.0);
       this->get_parameter("node_frequency", loop_frequency_);
-      RCLCPP_DEBUG(this->get_logger(), "node [%s] base frequency= %f", loop_frequency_);
+      RCLCPP_DEBUG(this->get_logger(), "node [%s] base frequency= %f", this->get_name(), loop_frequency_);
 
       if (loop_frequency_ > 0.0)
       {
