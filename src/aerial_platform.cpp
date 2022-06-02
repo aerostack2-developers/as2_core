@@ -46,7 +46,8 @@ namespace as2
     this->declare_parameter<float>("info_freq", 10.0);
     try
     {
-      this->declare_parameter<bool>("simulation_mode");
+      // this->declare_parameter<bool>("simulation_mode");
+      this->declare_parameter("simulation_mode"); // TODO: Fix for ROS2 Galactic
     }
     catch(const rclcpp::ParameterTypeException& e)
     {
@@ -55,7 +56,8 @@ namespace as2
     }
     try
     {
-      this->declare_parameter<float>("mass");
+      // this->declare_parameter<float>("mass");
+      this->declare_parameter("mass"); // TODO: Fix for ROS2 Galactic
     }
     catch(const rclcpp::ParameterTypeException& e)
     {
@@ -64,7 +66,8 @@ namespace as2
     }
     try
     {
-      this->declare_parameter<float>("max_thrust");
+      // this->declare_parameter<float>("max_thrust");
+      this->declare_parameter("max_thrust"); // TODO: Fix for ROS2 Galactic
     }
     catch(const rclcpp::ParameterTypeException& e)
     {
@@ -73,7 +76,8 @@ namespace as2
     }
     try
     {
-      this->declare_parameter<float>("min_thrust");
+      // this->declare_parameter<float>("min_thrust");
+      this->declare_parameter("min_thrust"); // TODO: Fix for ROS2 Galactic
     }
     catch(const rclcpp::ParameterTypeException& e)
     {
@@ -82,7 +86,8 @@ namespace as2
     }
     try
     {
-      this->declare_parameter<std::string>("control_modes_file");
+      // this->declare_parameter<std::string>("control_modes_file");
+      this->declare_parameter("control_modes_file"); // TODO: Fix for ROS2 Galactic
     }
     catch(const rclcpp::ParameterTypeException& e)
     {
