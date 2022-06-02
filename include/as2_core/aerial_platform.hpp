@@ -106,6 +106,8 @@ namespace as2
      */
     AerialPlatform();
 
+    ~AerialPlatform() {};
+
     /**
      * @brief Configures the platform sensors
      *
