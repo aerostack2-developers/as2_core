@@ -46,6 +46,24 @@ namespace as2
     namespace FrameUtils
     {
         /**
+         * @brief Convert ENU (east, north, up) to FLU (forward, left, up) frame.
+         *
+         * @param yaw_angle ENU yaw angle.
+         * @param enu_vec Eigen::Vector3d ENU vector.
+         * @return Eigen::Vector3d FLU vector.
+         */
+        Eigen::Vector3d convertENUtoFLU(const float yaw_angle, const Eigen::Vector3d &enu_vec);
+
+        /**
+         * @brief Convert FLU (forward, left, up) to ENU (east, north, up) frame.
+         *
+         * @param yaw_angle ENU yaw angle.
+         * @param flu_vec Eigen::Vector3d FLU vector.
+         * @return Eigen::Vector3d ENU vector.
+         */
+        Eigen::Vector3d convertFLUtoENU(const float yaw_angle, const Eigen::Vector3d &flu_vec);
+
+        /**
          * @brief Convert quaternion to euler angles.
          *
          * @param quaternion tf2::Quaternion to convert.
@@ -116,6 +134,7 @@ namespace as2
          *
          * @param quaternion geometry_msgs::msg::Quaternion to convert.
          * @param yaw double pointer to store yaw angle.
+         * @return Double yaw angle.
          */
         double getYawFromQuaternion(const geometry_msgs::msg::Quaternion &quaternion);
 
@@ -124,6 +143,7 @@ namespace as2
          *
          * @param quaternion Eigen::Quaternion to convert.
          * @param yaw double pointer to store yaw angle.
+         * @return Double yaw angle.
          */
         double getYawFromQuaternion(const Eigen::Quaterniond &quaternion);
 
@@ -132,6 +152,7 @@ namespace as2
          * 
          * @param x double x coordinate of the vector.
          * @param y double y coordinate of the vector.
+         * @return Double yaw angle.
          */
         double getVector2DAngle(const double &x, const double &y);
 

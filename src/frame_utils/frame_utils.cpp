@@ -39,6 +39,24 @@ namespace as2
 {
     namespace FrameUtils
     {
+        Eigen::Vector3d convertENUtoFLU(const float yaw_angle, const Eigen::Vector3d &enu_vec)
+        {
+            Eigen::Matrix3d R_FLU_ENU;
+            R_FLU_ENU << cos(yaw_angle), sin(yaw_angle), 0,
+                -sin(yaw_angle), cos(yaw_angle), 0,
+                0, 0, 1;
+            return R_FLU_ENU * enu_vec;
+        }
+
+        Eigen::Vector3d convertFLUtoENU(const float yaw_angle, const Eigen::Vector3d &flu_vec)
+        {
+            Eigen::Matrix3d R_ENU_FLU;
+            R_ENU_FLU << cos(yaw_angle), -sin(yaw_angle), 0,
+                sin(yaw_angle), cos(yaw_angle), 0,
+                0, 0, 1;
+            return R_ENU_FLU * flu_vec;
+        }
+
         void quaternionToEuler(const tf2::Quaternion &quaternion, double &roll, double &pitch, double &yaw)
         {
             tf2::Matrix3x3 rotation_matrix(quaternion);
@@ -60,8 +78,7 @@ namespace as2
                 quaternion.x(),
                 quaternion.y(),
                 quaternion.z(),
-                quaternion.w()
-            );
+                quaternion.w());
             quaternionToEuler(tf_quaternion, roll, pitch, yaw);
             return;
         }
@@ -90,8 +107,7 @@ namespace as2
                 tf_quaternion.w(),
                 tf_quaternion.x(),
                 tf_quaternion.y(),
-                tf_quaternion.z()
-            );
+                tf_quaternion.z());
             return;
         }
 
