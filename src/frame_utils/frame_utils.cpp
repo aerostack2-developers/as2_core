@@ -39,22 +39,72 @@ namespace as2
 {
     namespace FrameUtils
     {
-        Eigen::Vector3d convertENUtoFLU(const float yaw_angle, const Eigen::Vector3d &enu_vec)
+        Eigen::Vector3d convertENUtoFLU(const float roll_angle, const float pitch_angle, const float yaw_angle, const Eigen::Vector3d &enu_vec)
         {
-            Eigen::Matrix3d R_FLU_ENU;
-            R_FLU_ENU << cos(yaw_angle), sin(yaw_angle), 0,
-                -sin(yaw_angle), cos(yaw_angle), 0,
-                0, 0, 1;
-            return R_FLU_ENU * enu_vec;
+            tf2::Quaternion q;
+            q.setRPY(roll_angle, pitch_angle, yaw_angle);
+            tf2::Matrix3x3 R_FLU_ENU(q);
+            Eigen::Matrix3d R_FLU_ENU_eigen;
+            R_FLU_ENU_eigen <<
+                R_FLU_ENU[0][0], R_FLU_ENU[0][1], R_FLU_ENU[0][2],
+                R_FLU_ENU[1][0], R_FLU_ENU[1][1], R_FLU_ENU[1][2],
+                R_FLU_ENU[2][0], R_FLU_ENU[2][1], R_FLU_ENU[2][2];
+            
+            return R_FLU_ENU_eigen.inverse() * enu_vec;
         }
 
-        Eigen::Vector3d convertFLUtoENU(const float yaw_angle, const Eigen::Vector3d &flu_vec)
+        Eigen::Vector3d convertENUtoFLU(const tf2::Quaternion &quaternion, const Eigen::Vector3d &enu_vec)
         {
-            Eigen::Matrix3d R_ENU_FLU;
-            R_ENU_FLU << cos(yaw_angle), -sin(yaw_angle), 0,
-                sin(yaw_angle), cos(yaw_angle), 0,
-                0, 0, 1;
-            return R_ENU_FLU * flu_vec;
+            tf2::Matrix3x3 rotation_matrix(quaternion);
+            double roll, pitch, yaw;
+            rotation_matrix.getRPY(roll, pitch, yaw);
+            return convertENUtoFLU(roll, pitch, yaw, enu_vec);
+        }
+
+        Eigen::Vector3d convertENUtoFLU(const geometry_msgs::msg::Quaternion &quaternion, const Eigen::Vector3d &enu_vec)
+        {
+            tf2::Quaternion q(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+            return convertENUtoFLU(q, enu_vec);
+        }
+
+        Eigen::Vector3d convertENUtoFLU(const Eigen::Quaterniond &quaternion, const Eigen::Vector3d &enu_vec)
+        {
+            tf2::Quaternion q(quaternion.x(), quaternion.y(), quaternion.z(), quaternion.w());
+            return convertENUtoFLU(q, enu_vec);
+        }
+
+        Eigen::Vector3d convertFLUtoENU(const float roll_angle, const float pitch_angle, const float yaw_angle, const Eigen::Vector3d &enu_vec)
+        {
+            tf2::Quaternion q;
+            q.setRPY(roll_angle, pitch_angle, yaw_angle);
+            tf2::Matrix3x3 R_FLU_ENU(q);
+            Eigen::Matrix3d R_FLU_ENU_eigen;
+            R_FLU_ENU_eigen <<
+                R_FLU_ENU[0][0], R_FLU_ENU[0][1], R_FLU_ENU[0][2],
+                R_FLU_ENU[1][0], R_FLU_ENU[1][1], R_FLU_ENU[1][2],
+                R_FLU_ENU[2][0], R_FLU_ENU[2][1], R_FLU_ENU[2][2];
+            
+            return R_FLU_ENU_eigen * enu_vec;
+        }
+
+        Eigen::Vector3d convertFLUtoENU(const tf2::Quaternion &quaternion, const Eigen::Vector3d &enu_vec)
+        {
+            tf2::Matrix3x3 rotation_matrix(quaternion);
+            double roll, pitch, yaw;
+            rotation_matrix.getRPY(roll, pitch, yaw);
+            return convertFLUtoENU(roll, pitch, yaw, enu_vec);
+        }
+
+        Eigen::Vector3d convertFLUtoENU(const geometry_msgs::msg::Quaternion &quaternion, const Eigen::Vector3d &enu_vec)
+        {
+            tf2::Quaternion q(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+            return convertFLUtoENU(q, enu_vec);
+        }
+
+        Eigen::Vector3d convertFLUtoENU(const Eigen::Quaterniond &quaternion, const Eigen::Vector3d &enu_vec)
+        {
+            tf2::Quaternion q(quaternion.x(), quaternion.y(), quaternion.z(), quaternion.w());
+            return convertFLUtoENU(q, enu_vec);
         }
 
         void quaternionToEuler(const tf2::Quaternion &quaternion, double &roll, double &pitch, double &yaw)

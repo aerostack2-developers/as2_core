@@ -48,20 +48,77 @@ namespace as2
         /**
          * @brief Convert ENU (east, north, up) to FLU (forward, left, up) frame.
          *
-         * @param yaw_angle ENU yaw angle.
+         * @param quaternion tf2::Quaternion in ENU frame.
          * @param enu_vec Eigen::Vector3d ENU vector.
          * @return Eigen::Vector3d FLU vector.
          */
-        Eigen::Vector3d convertENUtoFLU(const float yaw_angle, const Eigen::Vector3d &enu_vec);
+        Eigen::Vector3d convertENUtoFLU(const float roll_angle, const float pitch_angle, const float yaw_angle, const Eigen::Vector3d &enu_vec);
+
+        /**
+         * @brief Convert ENU (east, north, up) to FLU (forward, left, up) frame.
+         *
+         * @param quaternion tf2::Quaternion in ENU frame.
+         * @param enu_vec Eigen::Vector3d ENU vector.
+         * @return Eigen::Vector3d FLU vector.
+         */
+        Eigen::Vector3d convertENUtoFLU(const tf2::Quaternion &quaternion, const Eigen::Vector3d &enu_vec);
+
+        /**
+         * @brief Convert ENU (east, north, up) to FLU (forward, left, up) frame.
+         *
+         * @param quaternion geometry_msgs::msg::Quaternion in ENU frame.
+         * @param enu_vec Eigen::Vector3d ENU vector.
+         * @return Eigen::Vector3d FLU vector.
+         */
+        Eigen::Vector3d convertENUtoFLU(const geometry_msgs::msg::Quaternion &quaternion, const Eigen::Vector3d &enu_vec);
+
+        /**
+         * @brief Convert ENU (east, north, up) to FLU (forward, left, up) frame.
+         *
+         * @param quaternion Eigen::Quaterniond in ENU frame.
+         * @param enu_vec Eigen::Vector3d ENU vector.
+         * @return Eigen::Vector3d FLU vector.
+         */
+        Eigen::Vector3d convertENUtoFLU(const Eigen::Quaterniond &quaternion, const Eigen::Vector3d &enu_vec);
+        
+        /**
+         * @brief Convert FLU (forward, left, up) to ENU (east, north, up) frame.
+         *
+         * @param quaternion tf2::Quaternion in ENU frame.
+         * @param flu_vec Eigen::Vector3d FLU vector.
+         * @return Eigen::Vector3d ENU vector.
+         */
+        Eigen::Vector3d convertFLUtoENU(const float roll_angle, const float pitch_angle, const float yaw_angle, const Eigen::Vector3d &flu_vec);
 
         /**
          * @brief Convert FLU (forward, left, up) to ENU (east, north, up) frame.
          *
-         * @param yaw_angle ENU yaw angle.
+         * @param quaternion tf2::Quaternion in ENU frame.
          * @param flu_vec Eigen::Vector3d FLU vector.
          * @return Eigen::Vector3d ENU vector.
          */
-        Eigen::Vector3d convertFLUtoENU(const float yaw_angle, const Eigen::Vector3d &flu_vec);
+        Eigen::Vector3d convertFLUtoENU(const tf2::Quaternion &quaternion, const Eigen::Vector3d &flu_vec);
+
+        /**
+         * @brief Convert FLU (forward, left, up) to ENU (east, north, up) frame.
+         *
+         * @param quaternion geometry_msgs::msg::Quaternion in ENU frame.
+         * @param flu_vec Eigen::Vector3d FLU vector.
+         * @return Eigen::Vector3d ENU vector.
+         */
+        Eigen::Vector3d convertFLUtoENU(const geometry_msgs::msg::Quaternion &quaternion, const Eigen::Vector3d &flu_vec);
+
+        /**
+         * @brief Convert FLU (forward, left, up) to ENU (east, north, up) frame.
+         *
+         * @param quaternion Eigen::Quaterniond in ENU frame.
+         * @param flu_vec Eigen::Vector3d FLU vector.
+         * @return Eigen::Vector3d ENU vector.
+         */
+        Eigen::Vector3d convertFLUtoENU(const Eigen::Quaterniond &quaternion, const Eigen::Vector3d &flu_vec);
+
+
+
 
         /**
          * @brief Convert quaternion to euler angles.
