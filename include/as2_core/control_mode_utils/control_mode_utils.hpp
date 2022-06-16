@@ -73,12 +73,14 @@ namespace as2
   // #
   // # angle             = 0 = 0b00000000
   // # speed             = 1 = 0b00000100
+  // # none              = 2 = 0b00001000
   // #
   // # frame codification
   // #
   // # local_frame_flu   = 0 = 0b00000000
   // # global_frame_enu  = 1 = 0b00000001
   // # global_frame_lla  = 2 = 0b00000010
+  // # undefined_frame   = 3 = 0b00000011
   // #
   // #-----------------------------------------------------------------
 

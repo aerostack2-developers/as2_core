@@ -55,12 +55,14 @@ uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode &mode) {
   // #
   // # angle             = 0 = 0b00000000
   // # speed             = 1 = 0b00000100
+  // # none              = 2 = 0b00001000
   // #
   // # frame codification
   // #
   // # local_frame_flu   = 0 = 0b00000000
   // # global_frame_enu  = 1 = 0b00000001
   // # global_frame_lla  = 2 = 0b00000010
+  // # undefined_frame   = 3 = 0b00000011
   // #
   // #-----------------------------------------------------------------
 
@@ -103,6 +105,9 @@ uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode &mode) {
     case as2_msgs::msg::ControlMode::YAW_SPEED:
       control_mode_uint8t |= 0b00000100;
       break;
+    case as2_msgs::msg::ControlMode::NONE:
+      control_mode_uint8t |= 0b00001000;
+      break;
     default:
       RCLCPP_ERROR(rclcpp::get_logger("as2_mode"), "Yaw mode not recognized");
 
@@ -118,6 +123,9 @@ uint8_t convertAS2ControlModeToUint8t(const as2_msgs::msg::ControlMode &mode) {
       break;
     case as2_msgs::msg::ControlMode::GLOBAL_LAT_LONG_ASML:
       control_mode_uint8t |= 0b00000010;
+      break;
+    case as2_msgs::msg::ControlMode::UNDEFINED_FRAME:
+      control_mode_uint8t |= 0b00000011;
       break;
     default:
       RCLCPP_ERROR(rclcpp::get_logger("as2_mode"), "Reference frame not recognized");
@@ -143,12 +151,14 @@ as2_msgs::msg::ControlMode convertUint8tToAS2ControlMode(uint8_t control_mode_ui
   // #
   // # angle             = 0 = 0b00000000
   // # speed             = 1 = 0b00000100
+  // # none              = 2 = 0b00001000
   // #
   // # frame codification
   // #
   // # local_frame_flu   = 0 = 0b00000000
   // # global_frame_enu  = 1 = 0b00000001
   // # global_frame_lla  = 2 = 0b00000010
+  // # undefined_frame   = 3 = 0b00000011
   // #
   // #-----------------------------------------------------------------
 
@@ -176,7 +186,9 @@ as2_msgs::msg::ControlMode convertUint8tToAS2ControlMode(uint8_t control_mode_ui
     mode.yaw_mode = as2_msgs::msg::ControlMode::YAW_SPEED;
   } else if ((control_mode_uint8t & 0b00000110) == 0b00000000) {
     mode.yaw_mode = as2_msgs::msg::ControlMode::YAW_ANGLE;
-  } else {
+  } else if ((control_mode_uint8t & 0b00000110) == 0b00001000) {
+    mode.yaw_mode = as2_msgs::msg::ControlMode::NONE;
+  }else {
     RCLCPP_ERROR(rclcpp::get_logger("as2_mode"), "Yaw mode not recognized");
   }
 
@@ -186,6 +198,8 @@ as2_msgs::msg::ControlMode convertUint8tToAS2ControlMode(uint8_t control_mode_ui
     mode.reference_frame = as2_msgs::msg::ControlMode::GLOBAL_LAT_LONG_ASML;
   } else if ((control_mode_uint8t & 0b00000011) == 0b00000000) {
     mode.reference_frame = as2_msgs::msg::ControlMode::BODY_FLU_FRAME;
+  } else if ((control_mode_uint8t & 0b00000011) == 0b00000011) {
+    mode.reference_frame = as2_msgs::msg::ControlMode::UNDEFINED_FRAME;
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("as2_mode"), "Reference frame not recognized");
   }
@@ -201,8 +215,7 @@ std::string controlModeToString(const as2_msgs::msg::ControlMode& mode) {
       return ss.str();
     } break;
     case as2_msgs::msg::ControlMode::HOVER: {
-      ss << "HOVER " << std::endl;
-      return ss.str();
+      ss << "HOVER ";
     } break;
     case as2_msgs::msg::ControlMode::ACRO:
       ss << "ACRO ";
@@ -235,6 +248,9 @@ std::string controlModeToString(const as2_msgs::msg::ControlMode& mode) {
     case as2_msgs::msg::ControlMode::YAW_ANGLE:
       ss << "YAW_ANGLE ";
       break;
+    case as2_msgs::msg::ControlMode::NONE:
+      ss << "YAW_NONE ";
+      break;
     default:
       ss << "Yaw mode not recognized" << std::endl;
       break;
@@ -251,10 +267,14 @@ std::string controlModeToString(const as2_msgs::msg::ControlMode& mode) {
     case as2_msgs::msg::ControlMode::BODY_FLU_FRAME:
       ss << "BODY_FLU_FRAME ";
       break;
+    case as2_msgs::msg::ControlMode::UNDEFINED_FRAME:
+      ss << "UNDEFINED_FRAME ";
+      break;
     default:
       ss << "Reference frame not recognized" << std::endl;
       break;
   }
+
   return ss.str();
 }
 
