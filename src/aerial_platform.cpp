@@ -183,7 +183,7 @@ namespace as2
         this->generate_global_name(as2_names::topics::platform::info), as2_names::topics::platform::qos);
 
     platform_info_timer_ = this->create_wall_timer(
-      std::chrono::duration<double>(info_freq_),
+      std::chrono::duration<double>(1.0f/info_freq_),
       std::bind(&AerialPlatform::publishPlatformInfo, this));
   }
 
