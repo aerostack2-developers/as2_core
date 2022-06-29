@@ -247,7 +247,7 @@ namespace as2
     if (!isControlModeSettled())
     {
       auto& clk = *this->get_clock();
-      RCLCPP_ERROR_THROTTLE(this->get_logger(), clk, 5000, "Platform control mode is not settled yet");
+      RCLCPP_DEBUG_THROTTLE(this->get_logger(), clk, 5000, "Platform control mode is not settled yet");
       return false;
     }
     else
