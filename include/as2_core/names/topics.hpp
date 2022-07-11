@@ -57,6 +57,8 @@ namespace as2_names
     {
       const rclcpp::QoS qos = rclcpp::SensorDataQoS();
       const std::string odom = "self_localization/odom";
+      const std::string pose = "self_localization/pose";
+      const std::string twist = "self_localization/twist";
     }
     namespace motion_reference
     {
