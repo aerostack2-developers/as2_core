@@ -1,0 +1,9 @@
+digraph G {
+"drone0/map" -> "drone0/odom"[label=" Broadcaster: default_authority\nAverage rate: 100.194\nBuffer length: 5.01\nMost recent transform: 1657551019.676558\nOldest transform: 1657551014.666288\n"];
+"earth" -> "drone0/map"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"drone0/odom" -> "drone0/base_link"[label=" Broadcaster: default_authority\nAverage rate: 100.195\nBuffer length: 5.0\nMost recent transform: 1657551019.666534\nOldest transform: 1657551014.666288\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1657551019.6857991"[ shape=plaintext ] ;
+}->"earth";
+}

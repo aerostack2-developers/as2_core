@@ -52,6 +52,7 @@ namespace as2_names
       const std::string gps = "sensor_measurements/gps";
       const std::string camera = "sensor_measurements/camera";
       const std::string battery = "sensor_measurements/battery";
+      const std::string odom = "sensor_measurements/odom";
     }
     namespace self_localization
     {

@@ -43,7 +43,6 @@ namespace as2
 
     Camera::Camera(const std::string &id, as2::Node *node_ptr) : GenericSensor(id, node_ptr)
     {
-      image_publisher_ = node_ptr_->create_publisher<sensor_msgs::msg::Image>(topic_name_, 10);
       camera_info_publisher_ =
           node_ptr_->create_publisher<sensor_msgs::msg::CameraInfo>(topic_name_ + "/info", 10);
     }
