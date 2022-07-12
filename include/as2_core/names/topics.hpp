@@ -54,6 +54,12 @@ namespace as2_names
       const std::string battery = "sensor_measurements/battery";
       const std::string odom = "sensor_measurements/odom";
     }
+    namespace ground_truth
+    {
+      const rclcpp::QoS qos = rclcpp::SensorDataQoS();
+      const std::string pose = "ground_truth/pose";
+      const std::string twist = "ground_truth/twist";
+    }
     namespace self_localization
     {
       const rclcpp::QoS qos = rclcpp::SensorDataQoS();
