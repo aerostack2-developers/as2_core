@@ -35,26 +35,18 @@
 
 #include "as2_core/node.hpp"
 
-std::string as2::Node::generate_global_name(const std::string &name)
-{
-  if (name.find("/") == 0)
-  {
+std::string as2::Node::generate_global_name(const std::string &name) {
+  if (name.find("/") == 0) {
     return name.substr(1);
-  }
-  else
-  {
+  } else {
     return name;
   }
 };
 
-std::string as2::Node::generate_local_name(const std::string &name)
-{
-  if (name.find("/") == 0)
-  {
+std::string as2::Node::generate_local_name(const std::string &name) {
+  if (name.find("/") == 0) {
     return this->get_name() + name;
-  }
-  else
-  {
+  } else {
     return std::string(this->get_name()) + "/" + name;
   }
 };

@@ -32,135 +32,120 @@
 
 #include "platform_state_machine.hpp"
 
-namespace as2
-{
-  PlatformStateMachine::PlatformStateMachine(as2::Node *node) : node_ptr_(node)
-  {
-    state_.state = as2_msgs::msg::PlatformStatus::DISARMED;
-    defineTransitions();
+namespace as2 {
+PlatformStateMachine::PlatformStateMachine(as2::Node *node) : node_ptr_(node) {
+  state_.state = as2_msgs::msg::PlatformStatus::DISARMED;
+  defineTransitions();
 
-    // Initialize the srv server
-    state_machine_event_srv_ = node_ptr_->create_service<as2_msgs::srv::SetPlatformStateMachineEvent>(
-        node_ptr_->generate_local_name("state_machine_event"),
-        std::bind(
-            &PlatformStateMachine::setStateMachineEventSrvCallback, this, std::placeholders::_1,
-            std::placeholders::_2));
+  // Initialize the srv server
+  state_machine_event_srv_ = node_ptr_->create_service<as2_msgs::srv::SetPlatformStateMachineEvent>(
+      node_ptr_->generate_local_name("state_machine_event"),
+      std::bind(&PlatformStateMachine::setStateMachineEventSrvCallback, this, std::placeholders::_1,
+                std::placeholders::_2));
+}
+
+PlatformStateMachine::~PlatformStateMachine() { state_machine_event_srv_.reset(); }
+
+bool PlatformStateMachine::processEvent(const int8_t &event) {
+  // Get the current state
+  int8_t current_state = state_.state;
+
+  // Get the transition that matches the current state and the event
+  StateMachineTransition transition = getTransition(current_state, event);
+
+  // If the transition is valid, change the state
+  if (transition.transition_id == -11) {
+    RCLCPP_WARN(node_ptr_->get_logger(), "Invalid transition: %s -> %s",
+                stateToString(current_state).c_str(), eventToString(event).c_str());
+    return false;
   }
 
-  PlatformStateMachine::~PlatformStateMachine()
-  {
-    state_machine_event_srv_.reset();
-  }
+  state_.state = transition.to_state_id;
+  RCLCPP_INFO(node_ptr_->get_logger(), "Transition [%s] : New State [%s]",
+              transition.transition_name.c_str(), stateToString(transition.to_state_id).c_str());
 
-  bool PlatformStateMachine::processEvent(const int8_t &event)
-  {
-    // Get the current state
-    int8_t current_state = state_.state;
+  return true;
+}
 
-    // Get the transition that matches the current state and the event
-    StateMachineTransition transition = getTransition(current_state, event);
+bool PlatformStateMachine::processEvent(const Event &event) { return processEvent(event.event); };
 
-    // If the transition is valid, change the state
-    if (transition.transition_id == -11)
-    {
-      RCLCPP_WARN(node_ptr_->get_logger(), "Invalid transition: %s -> %s",
-                  stateToString(current_state).c_str(), eventToString(event).c_str());
-      return false;
+StateMachineTransition PlatformStateMachine::getTransition(const int8_t &current_state,
+                                                           const int8_t &event) {
+  StateMachineTransition transition;
+  transition.transition_id = -11;
+  for (int i = 0; i < transitions_.size(); i++) {
+    if (transitions_[i].from_state_id == current_state && transitions_[i].transition_id == event) {
+      transition = transitions_[i];
+      break;
     }
-
-    state_.state = transition.to_state_id;
-    RCLCPP_INFO(node_ptr_->get_logger(), "Transition [%s] : New State [%s]",
-                transition.transition_name.c_str(), stateToString(transition.to_state_id).c_str());
-
-    return true;
   }
+  return transition;
+}
 
-  bool PlatformStateMachine::processEvent(const Event &event) { return processEvent(event.event); };
+void PlatformStateMachine::setStateMachineEventSrvCallback(
+    const std::shared_ptr<as2_msgs::srv::SetPlatformStateMachineEvent::Request> request,
+    std::shared_ptr<as2_msgs::srv::SetPlatformStateMachineEvent::Response> response) {
+  processEvent(request->event);
+  response->success = true;
+  response->current_state = state_;
+}
 
-  StateMachineTransition PlatformStateMachine::getTransition(
-      const int8_t &current_state, const int8_t &event)
-  {
-    StateMachineTransition transition;
-    transition.transition_id = -11;
-    for (int i = 0; i < transitions_.size(); i++)
-    {
-      if (transitions_[i].from_state_id == current_state && transitions_[i].transition_id == event)
-      {
-        transition = transitions_[i];
-        break;
-      }
-    }
-    return transition;
-  }
+void PlatformStateMachine::defineTransitions() {
+  transitions_.clear();
+  transitions_.reserve(11);
 
-  void PlatformStateMachine::setStateMachineEventSrvCallback(
-      const std::shared_ptr<as2_msgs::srv::SetPlatformStateMachineEvent::Request> request,
-      std::shared_ptr<as2_msgs::srv::SetPlatformStateMachineEvent::Response> response)
-  {
-    processEvent(request->event);
-    response->success = true;
-    response->current_state = state_;
-  }
+  // INTIAL_STATE -> [TRANSITION] -> FINAL_STATE
 
-  void PlatformStateMachine::defineTransitions()
-  {
-    transitions_.clear();
-    transitions_.reserve(11);
+  // DISARMED -> [ARM] -> ARMED
+  transitions_.emplace_back(StateMachineTransition{"ARM", as2_msgs::msg::PlatformStatus::DISARMED,
+                                                   Event::ARM,
+                                                   as2_msgs::msg::PlatformStatus::LANDED});
 
-    // INTIAL_STATE -> [TRANSITION] -> FINAL_STATE
+  // LANDED -> [DISARM] -> DISARMED
+  transitions_.emplace_back(StateMachineTransition{"DISARM", as2_msgs::msg::PlatformStatus::LANDED,
+                                                   Event::DISARM,
+                                                   as2_msgs::msg::PlatformStatus::DISARMED});
 
-    // DISARMED -> [ARM] -> ARMED
-    transitions_.emplace_back(StateMachineTransition{
-        "ARM", as2_msgs::msg::PlatformStatus::DISARMED, Event::ARM,
-        as2_msgs::msg::PlatformStatus::LANDED});
+  // LANDED -> [TAKE_OFF] -> TAKING_OFF
+  transitions_.emplace_back(
+      StateMachineTransition{"TAKE_OFF", as2_msgs::msg::PlatformStatus::LANDED, Event::TAKE_OFF,
+                             as2_msgs::msg::PlatformStatus::TAKING_OFF});
 
-    // LANDED -> [DISARM] -> DISARMED
-    transitions_.emplace_back(StateMachineTransition{
-        "DISARM", as2_msgs::msg::PlatformStatus::LANDED, Event::DISARM,
-        as2_msgs::msg::PlatformStatus::DISARMED});
+  // TAKING_OFF -> [TOOK_OFF] -> FLYING
+  transitions_.emplace_back(
+      StateMachineTransition{"TOOK_OFF", as2_msgs::msg::PlatformStatus::TAKING_OFF, Event::TOOK_OFF,
+                             as2_msgs::msg::PlatformStatus::FLYING});
 
-    // LANDED -> [TAKE_OFF] -> TAKING_OFF
-    transitions_.emplace_back(StateMachineTransition{
-        "TAKE_OFF", as2_msgs::msg::PlatformStatus::LANDED, Event::TAKE_OFF,
-        as2_msgs::msg::PlatformStatus::TAKING_OFF});
+  // FLYING -> [LAND] -> LANDING
+  transitions_.emplace_back(StateMachineTransition{"LAND", as2_msgs::msg::PlatformStatus::FLYING,
+                                                   Event::LAND,
+                                                   as2_msgs::msg::PlatformStatus::LANDING});
 
-    // TAKING_OFF -> [TOOK_OFF] -> FLYING
-    transitions_.emplace_back(StateMachineTransition{
-        "TOOK_OFF", as2_msgs::msg::PlatformStatus::TAKING_OFF, Event::TOOK_OFF,
-        as2_msgs::msg::PlatformStatus::FLYING});
+  // LANDING -> [LANDED] -> LANDED
+  transitions_.emplace_back(StateMachineTransition{"LANDED", as2_msgs::msg::PlatformStatus::LANDING,
+                                                   Event::LANDED,
+                                                   as2_msgs::msg::PlatformStatus::LANDED});
 
-    // FLYING -> [LAND] -> LANDING
-    transitions_.emplace_back(StateMachineTransition{
-        "LAND", as2_msgs::msg::PlatformStatus::FLYING, Event::LAND,
-        as2_msgs::msg::PlatformStatus::LANDING});
+  // EMERGENCY TRANSITIONS
+  transitions_.emplace_back(
+      StateMachineTransition{"EMERGENCY", as2_msgs::msg::PlatformStatus::DISARMED, Event::EMERGENCY,
+                             as2_msgs::msg::PlatformStatus::EMERGENCY});
+  transitions_.emplace_back(
+      StateMachineTransition{"EMERGENCY", as2_msgs::msg::PlatformStatus::LANDED, Event::EMERGENCY,
+                             as2_msgs::msg::PlatformStatus::EMERGENCY});
+  transitions_.emplace_back(
+      StateMachineTransition{"EMERGENCY", as2_msgs::msg::PlatformStatus::TAKING_OFF,
+                             Event::EMERGENCY, as2_msgs::msg::PlatformStatus::EMERGENCY});
+  transitions_.emplace_back(
+      StateMachineTransition{"EMERGENCY", as2_msgs::msg::PlatformStatus::FLYING, Event::EMERGENCY,
+                             as2_msgs::msg::PlatformStatus::EMERGENCY});
+  transitions_.emplace_back(
+      StateMachineTransition{"EMERGENCY", as2_msgs::msg::PlatformStatus::LANDING, Event::EMERGENCY,
+                             as2_msgs::msg::PlatformStatus::EMERGENCY});
+}
 
-    // LANDING -> [LANDED] -> LANDED
-    transitions_.emplace_back(StateMachineTransition{
-        "LANDED", as2_msgs::msg::PlatformStatus::LANDING, Event::LANDED,
-        as2_msgs::msg::PlatformStatus::LANDED});
-
-    // EMERGENCY TRANSITIONS
-    transitions_.emplace_back(StateMachineTransition{
-        "EMERGENCY", as2_msgs::msg::PlatformStatus::DISARMED, Event::EMERGENCY,
-        as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-        "EMERGENCY", as2_msgs::msg::PlatformStatus::LANDED, Event::EMERGENCY,
-        as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-        "EMERGENCY", as2_msgs::msg::PlatformStatus::TAKING_OFF, Event::EMERGENCY,
-        as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-        "EMERGENCY", as2_msgs::msg::PlatformStatus::FLYING, Event::EMERGENCY,
-        as2_msgs::msg::PlatformStatus::EMERGENCY});
-    transitions_.emplace_back(StateMachineTransition{
-        "EMERGENCY", as2_msgs::msg::PlatformStatus::LANDING, Event::EMERGENCY,
-        as2_msgs::msg::PlatformStatus::EMERGENCY});
-  }
-
-  std::string PlatformStateMachine::eventToString(int8_t event)
-  {
-    switch (event)
-    {
+std::string PlatformStateMachine::eventToString(int8_t event) {
+  switch (event) {
     case as2::Event::EMERGENCY:
       return "EMERGENCY";
       break;
@@ -185,13 +170,11 @@ namespace as2
     default:
       return "UNKNOWN";
       break;
-    }
   }
+}
 
-  std::string PlatformStateMachine::stateToString(int8_t state)
-  {
-    switch (state)
-    {
+std::string PlatformStateMachine::stateToString(int8_t state) {
+  switch (state) {
     case as2_msgs::msg::PlatformStatus::EMERGENCY:
       return "EMERGENCY";
       break;
@@ -213,7 +196,7 @@ namespace as2
     default:
       return "UNKNOWN";
       break;
-    }
   }
+}
 
-}; // namespace as2
+};  // namespace as2
