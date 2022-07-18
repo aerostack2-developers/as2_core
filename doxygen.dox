@@ -1,11 +1,9 @@
-  
   PROJECT_NAME = Aerostack2_core
   INPUT = ./include/as2_core ./src
   OUTPUT_DIRECTORY = ./doxygen/
   GENERATE_HTML = YES
   HTML_OUTPUT = html/
   IMAGE_PATH     = docs/images/
-
 
   // The prefix that is used for each comment line except for first and last.
   "doxdocgen.c.commentPrefix": " * ",
