@@ -213,7 +213,7 @@ std::string controlModeToString(const as2_msgs::msg::ControlMode& mode) {
   std::stringstream ss;
   switch (mode.control_mode) {
     case as2_msgs::msg::ControlMode::UNSET: {
-      ss << "UNSET " << std::endl;
+      ss << "UNSET ";
       return ss.str();
     } break;
     case as2_msgs::msg::ControlMode::HOVER: {
