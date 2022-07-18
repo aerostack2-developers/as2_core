@@ -43,17 +43,17 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-namespace as2
-{
-  /**
-   * @brief Executes the main loop of the node
-   *
-   * @param node node to execute the main loop
-   * @param run_function function to be executed in the main loop. Node frequency must be higher than 0
-   */
+namespace as2 {
+/**
+ * @brief Executes the main loop of the node
+ *
+ * @param node node to execute the main loop
+ * @param run_function function to be executed in the main loop. Node frequency must be higher than
+ * 0
+ */
 
-  void spinLoop(std::shared_ptr<as2::Node> node, std::function<void()> run_function = nullptr);
+void spinLoop(std::shared_ptr<as2::Node> node, std::function<void()> run_function = nullptr);
 
-}; // namespace as2
+};  // namespace as2
 
-#endif // __AEROSTACK2_CORE_FUNCTIONS_HPP__
+#endif  // __AEROSTACK2_CORE_FUNCTIONS_HPP__

@@ -67,9 +67,14 @@ namespace as2
     class GenericSensor
     {
     public:
-      GenericSensor(const std::string &topic_name, as2::Node *node_ptr, int pub_freq = -1) : topic_name_(topic_name), node_ptr_(node_ptr), pub_freq_(pub_freq)
+      GenericSensor(const std::string &topic_name, as2::Node *node_ptr, int pub_freq = -1) : node_ptr_(node_ptr), pub_freq_(pub_freq)
       {
-        // topic_name_ = std::string("sensor_measurements/") + sensor_id_;
+        // check if topic already has "sensor_measurements "in the name
+        // if not, add it
+        if (topic_name.find("sensor_measurements") == std::string::npos)
+        {
+          topic_name_ = std::string("sensor_measurements/") + topic_name;
+        }
       }
 
     protected:

@@ -37,6 +37,8 @@
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
+// TODO: Add namespace to the library
+
 /**
  * @brief Add namespace to the name of the Transform frame id
  *
@@ -59,8 +61,10 @@ std::string generateTfName(std::string _namespace, std::string _frame_name);
  * @param _yaw
  * @return geometry_msgs::msg::TransformStamped
  */
-geometry_msgs::msg::TransformStamped getTransformation(
-    const std::string &_frame_id, const std::string &_child_frame_id, double _translation_x,
-    double _translation_y, double _translation_z, double _roll, double _pitch, double _yaw);
+geometry_msgs::msg::TransformStamped getTransformation(const std::string &_frame_id,
+                                                       const std::string &_child_frame_id,
+                                                       double _translation_x, double _translation_y,
+                                                       double _translation_z, double _roll,
+                                                       double _pitch, double _yaw);
 
-#endif // TF_UTILS_HPP_
+#endif  // TF_UTILS_HPP_

@@ -32,6 +32,8 @@
 
 #include "tf_utils.hpp"
 
+// TODO: add namespace and documentation for this library, move this file inside a folder called frame_utils
+
 std::string generateTfName(std::string _namespace, std::string _frame_name)
 {
   std::string tf_name;
