@@ -1,8 +1,10 @@
 /*!*******************************************************************************************
  *  \file       control_mode_utils.cpp
  *  \brief      Utility functions for handling control modes over the aerostack2 framework
- *(implementation). \authors    Miguel Fernández Cortizas Pedro Arias Pérez David Pérez Saura Rafael
- *Pérez Seguí
+ *  \authors    Miguel Fernández Cortizas 
+ *              Pedro Arias Pérez 
+ *              David Pérez Saura 
+ *              Rafael Pérez Seguí
  *
  *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
  *              All Rights Reserved

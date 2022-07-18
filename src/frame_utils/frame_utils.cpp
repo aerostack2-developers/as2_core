@@ -1,10 +1,8 @@
 /*!*******************************************************************************************
  *  \file       frame_utils.cpp
- *  \brief      Aerostack2 code utils functions implementation file.
- *  \authors    Miguel Fernández Cortizas
+ *  \brief      Aerostack2 frame utils functions implementation file.
+ *  \authors    Rafael Pérez Seguí
  *              Pedro Arias Pérez
- *              David Pérez Saura
- *              Rafael Pérez Seguí
  *  \copyright  Copyright (c) 2022 Universidad Politécnica de Madrid
  *              All Rights Reserved
  *

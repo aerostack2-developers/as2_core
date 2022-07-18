@@ -60,8 +60,6 @@
 // camera
 #include <image_transport/image_transport.hpp>
 
-// TODO ADD CAMERA SUPPORT
-
 namespace as2
 {
   namespace sensors
@@ -69,9 +67,9 @@ namespace as2
     class GenericSensor
     {
     public:
-      GenericSensor(const std::string &id, as2::Node *node_ptr, int pub_freq = -1) : sensor_id_(id), node_ptr_(node_ptr), pub_freq_(pub_freq)
+      GenericSensor(const std::string &topic_name, as2::Node *node_ptr, int pub_freq = -1) : topic_name_(topic_name), node_ptr_(node_ptr), pub_freq_(pub_freq)
       {
-        topic_name_ = std::string("sensor_measurements/") + sensor_id_;
+        // topic_name_ = std::string("sensor_measurements/") + sensor_id_;
       }
 
     protected:
@@ -81,7 +79,7 @@ namespace as2
       rclcpp::TimerBase::SharedPtr timer_;
 
     private:
-      std::string sensor_id_;
+      // std::string sensor_id_;
 
       // TODO: TFs management
       void setStaticTransform(
