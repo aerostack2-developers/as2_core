@@ -60,122 +60,134 @@
 // camera
 #include <image_transport/image_transport.hpp>
 
-namespace as2
-{
-  namespace sensors
-  {
-    class GenericSensor
-    {
-    public:
-      GenericSensor(const std::string &topic_name, as2::Node *node_ptr, int pub_freq = -1) : node_ptr_(node_ptr), pub_freq_(pub_freq)
-      {
-        // check if topic already has "sensor_measurements "in the name
-        // if not, add it
-        if (topic_name.find("sensor_measurements") == std::string::npos)
-        {
-          topic_name_ = std::string("sensor_measurements/") + topic_name;
-        }
-      }
+// tf2
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-    protected:
-      std::string topic_name_;
-      as2::Node *node_ptr_ = nullptr;
-      float pub_freq_;
-      rclcpp::TimerBase::SharedPtr timer_;
+namespace as2 {
+namespace sensors {
+class GenericSensor {
+  public:
+  GenericSensor(const std::string &topic_name, as2::Node *node_ptr, int pub_freq = -1)
+      : node_ptr_(node_ptr), pub_freq_(pub_freq) {
+    // check if topic already has "sensor_measurements "in the name
+    // if not, add it
+    if (topic_name.find("sensor_measurements") == std::string::npos) {
+      topic_name_ = std::string("sensor_measurements/") + topic_name;
+    }
+  }
 
-    private:
-      // std::string sensor_id_;
+  protected:
+  std::string topic_name_;
+  as2::Node *node_ptr_ = nullptr;
+  float pub_freq_;
+  rclcpp::TimerBase::SharedPtr timer_;
 
-      // TODO: TFs management
-      void setStaticTransform(
-          const std::string &frame_id, const std::string &parent_frame_id, const float &x,
-          const float &y, const float &z, const float &roll, const float &pitch, const float &yaw){};
+  private:
+  // std::string sensor_id_;
 
-      // TODO: Implement this
-      void registerSensor(){};
+  void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
+                          float &y, float &z, float qx, float qy, float qz, float qw) {
+    static tf2_ros::StaticTransformBroadcaster static_broadcaster((rclcpp::Node*)node_ptr_);
+    geometry_msgs::msg::TransformStamped transformStamped;
+    transformStamped.header.stamp = rclcpp::Clock().now();
+    transformStamped.header.frame_id = parent_frame_id;
+    transformStamped.child_frame_id = frame_id;
+    transformStamped.transform.translation.x = x;
+    transformStamped.transform.translation.y = y;
+    transformStamped.transform.translation.z = z;
+    transformStamped.transform.rotation.x = qx;
+    transformStamped.transform.rotation.y = qy;
+    transformStamped.transform.rotation.z = qz;
+    transformStamped.transform.rotation.w = qw;
+    static_broadcaster.sendTransform(transformStamped);
+    RCLCPP_INFO(node_ptr_->get_logger(), "Static transform for %s to %s published",
+                frame_id.c_str(), parent_frame_id.c_str());
+  }
 
-    }; // class GenericSensor
+  void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
+                          float y, float z, float roll, float pitch, float yaw) {
+    // convert to quaternion and set the transform
+    tf2::Quaternion q;
+    q.setRPY(roll, pitch, yaw);
+    setStaticTransform(frame_id, parent_frame_id, x, y, z, q.x(), q.y(), q.z(), q.w());
+  };
 
-    template <typename T>
-    class Sensor : public GenericSensor
-    {
-    public:
-      Sensor(const std::string &id, as2::Node *node_ptr, int pub_freq = -1) : GenericSensor(id, node_ptr, pub_freq)
-      {
-        sensor_publisher_ = node_ptr_->create_publisher<T>(this->topic_name_, as2_names::topics::sensor_measurements::qos);
+  void registerSensor(){};
 
-        if (this->pub_freq_ != -1)
-        {
-          timer_ = node_ptr_->create_wall_timer(std::chrono::milliseconds(1000 / pub_freq), [this]()
-                                                { publishData(); });
-        }
-      }
+};  // class GenericSensor
 
-      void updateData(const T &msg)
-      {
-        if (this->pub_freq_ != -1)
-        {
-          this->msg_data_ = msg;
-        }
-        else
-        {
-          this->publishData(msg);
-        }
-      }
+template <typename T>
+class Sensor : public GenericSensor {
+  public:
+  Sensor(const std::string &id, as2::Node *node_ptr, int pub_freq = -1)
+      : GenericSensor(id, node_ptr, pub_freq) {
+    sensor_publisher_ = node_ptr_->create_publisher<T>(this->topic_name_,
+                                                       as2_names::topics::sensor_measurements::qos);
 
-    private:
-      void publishData()
-      {
-        this->sensor_publisher_->publish(msg_data_);
-      }
-      void publishData(const T &msg) { this->sensor_publisher_->publish(msg); }
+    if (this->pub_freq_ != -1) {
+      timer_ = node_ptr_->create_wall_timer(std::chrono::milliseconds(1000 / pub_freq),
+                                            [this]() { publishData(); });
+    }
+  }
 
-    private:
-      typename rclcpp::Publisher<T>::SharedPtr sensor_publisher_;
-      T msg_data_;
+  void updateData(const T &msg) {
+    if (this->pub_freq_ != -1) {
+      this->msg_data_ = msg;
+    } else {
+      this->publishData(msg);
+    }
+  }
 
-    }; // class Sensor
+  private:
+  void publishData() { this->sensor_publisher_->publish(msg_data_); }
+  void publishData(const T &msg) { this->sensor_publisher_->publish(msg); }
 
-    class Camera : public GenericSensor, std::enable_shared_from_this<rclcpp::Node>
-    {
-    public:
-      Camera(const std::string &id, as2::Node *node_ptr);
-      ~Camera();
+  private:
+  typename rclcpp::Publisher<T>::SharedPtr sensor_publisher_;
+  T msg_data_;
 
-      void setup();
-      void updateData(const sensor_msgs::msg::Image &_img);
-      void publishCameraData(const sensor_msgs::msg::Image &msg); // private
-      void loadParameters(const std::string &file);
-      void setParameters(const sensor_msgs::msg::CameraInfo &_camera_info);
+};  // class Sensor
 
-      void publishRectifiedImage(const sensor_msgs::msg::Image &msg);
-      // void publishCompressedImage(const sensor_msgs::msg::Image &msg);
+class Camera : public GenericSensor, std::enable_shared_from_this<rclcpp::Node> {
+  public:
+  Camera(const std::string &id, as2::Node *node_ptr);
+  ~Camera();
 
-    private:
-      rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher_;
-      rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_publisher_;
-      std::shared_ptr<image_transport::ImageTransport> image_transport_ptr_ = nullptr;
-      image_transport::Publisher it_publisher_;
+  void setup();
+  void updateData(const sensor_msgs::msg::Image &_img);
+  void publishCameraData(const sensor_msgs::msg::Image &msg);  // private
+  void loadParameters(const std::string &file);
+  void setParameters(const sensor_msgs::msg::CameraInfo &_camera_info);
 
-      sensor_msgs::msg::Image image_data_;
-      sensor_msgs::msg::CameraInfo camera_info_data_;
+  void publishRectifiedImage(const sensor_msgs::msg::Image &msg);
+  // void publishCompressedImage(const sensor_msgs::msg::Image &msg);
 
-      std::shared_ptr<rclcpp::Node> getSelfPtr();
+  private:
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher_;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_publisher_;
+  std::shared_ptr<image_transport::ImageTransport> image_transport_ptr_ = nullptr;
+  image_transport::Publisher it_publisher_;
 
-      bool setup_ = true;
-      bool camera_info_available_ = false;
+  sensor_msgs::msg::Image image_data_;
+  sensor_msgs::msg::CameraInfo camera_info_data_;
 
-    }; // class CameraSensor
+  std::shared_ptr<rclcpp::Node> getSelfPtr();
 
-    using Imu = Sensor<sensor_msgs::msg::Imu>;
-    using GPS = Sensor<sensor_msgs::msg::NavSatFix>;
-    using Lidar = Sensor<sensor_msgs::msg::LaserScan>;
-    using Battery = Sensor<sensor_msgs::msg::BatteryState>;
-    using Barometer = Sensor<sensor_msgs::msg::FluidPressure>;
-    using Compass = Sensor<sensor_msgs::msg::MagneticField>;
-    using RangeFinder = Sensor<sensor_msgs::msg::Range>;
+  bool setup_ = true;
+  bool camera_info_available_ = false;
 
-  }; // namespace sensors
-};   // namespace as2
+};  // class CameraSensor
 
-#endif // AEROSTACK2_NODE_HPP_
+using Imu = Sensor<sensor_msgs::msg::Imu>;
+using GPS = Sensor<sensor_msgs::msg::NavSatFix>;
+using Lidar = Sensor<sensor_msgs::msg::LaserScan>;
+using Battery = Sensor<sensor_msgs::msg::BatteryState>;
+using Barometer = Sensor<sensor_msgs::msg::FluidPressure>;
+using Compass = Sensor<sensor_msgs::msg::MagneticField>;
+using RangeFinder = Sensor<sensor_msgs::msg::Range>;
+
+};  // namespace sensors
+};  // namespace as2
+
+#endif  // AEROSTACK2_NODE_HPP_

@@ -26,6 +26,7 @@ set(PROJECT_DEPENDENCIES
   std_srvs
   geometry_msgs
   tf2_geometry_msgs
+  tf2 
   Eigen3
   rclcpp_lifecycle
   rclcpp_action
