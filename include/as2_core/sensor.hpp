@@ -86,7 +86,21 @@ class GenericSensor {
   public:
   // std::string sensor_id_;
 
-  void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
+  virtual void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
+                          float y, float z, float qx, float qy, float qz, float qw) {
+    setStaticTransform_(frame_id, parent_frame_id, x, y, z, qx, qy, qz, qw);
+  }
+
+  virtual void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
+                          float y, float z, float roll, float pitch, float yaw) {
+    // convert to quaternion and set the transform
+    tf2::Quaternion q;
+    q.setRPY(roll, pitch, yaw);
+    setStaticTransform_(frame_id, parent_frame_id, x, y, z, q.x(), q.y(), q.z(), q.w());
+  };
+  
+  protected:
+  void setStaticTransform_(const std::string &frame_id, const std::string &parent_frame_id, float x,
                           float y, float z, float qx, float qy, float qz, float qw) {
     static tf2_ros::StaticTransformBroadcaster static_broadcaster((rclcpp::Node*)node_ptr_);
     geometry_msgs::msg::TransformStamped transformStamped;
@@ -105,15 +119,7 @@ class GenericSensor {
                 frame_id.c_str(), parent_frame_id.c_str());
   }
 
-  void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
-                          float y, float z, float roll, float pitch, float yaw) {
-    // convert to quaternion and set the transform
-    tf2::Quaternion q;
-    q.setRPY(roll, pitch, yaw);
-    setStaticTransform(frame_id, parent_frame_id, x, y, z, q.x(), q.y(), q.z(), q.w());
-  };
 
-  private:
   void registerSensor(){};
 
 };  // class GenericSensor
@@ -163,6 +169,36 @@ class Camera : public GenericSensor, std::enable_shared_from_this<rclcpp::Node> 
 
   void publishRectifiedImage(const sensor_msgs::msg::Image &msg);
   // void publishCompressedImage(const sensor_msgs::msg::Image &msg);
+
+  void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
+                          float y, float z, float qx, float qy, float qz, float qw) override{
+    // FIXME: enhance performance 
+    // obtain r,p and yaw from quaternion
+    tf2::Quaternion q(qx, qy, qz, qw);
+    tf2::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+    setStaticTransform(frame_id, parent_frame_id, x, y, z, roll, pitch, yaw);
+  }
+
+  void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
+                          float y, float z, float roll, float pitch, float yaw) override {
+    // convert to quaternion and set the transform
+    tf2::Quaternion q;
+    q.setRPY(roll, pitch, yaw);
+    setStaticTransform_(frame_id, parent_frame_id, x, y, z, q.x(), q.y(), q.z(), q.w());
+
+    // if frame_id does not contain "camera_link"
+    if ( frame_id.find("camera_link") == std::string::npos ) {
+      // set the static transform for the camera_link frame rotating from FLU  to RDF
+      yaw = -M_PI/2.0f;
+      pitch = 0;
+      roll = -M_PI/2.0f;
+      q.setRPY(roll, pitch, yaw);
+      setStaticTransform_(frame_id + "/camera_link", frame_id, 0, 0 , 0, q.x(), q.y(), q.z(), q.w());
+    }
+
+  };
 
   private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher_;
