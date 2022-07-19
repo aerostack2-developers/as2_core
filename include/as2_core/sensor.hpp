@@ -83,11 +83,11 @@ class GenericSensor {
   float pub_freq_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  private:
+  public:
   // std::string sensor_id_;
 
   void setStaticTransform(const std::string &frame_id, const std::string &parent_frame_id, float x,
-                          float &y, float &z, float qx, float qy, float qz, float qw) {
+                          float y, float z, float qx, float qy, float qz, float qw) {
     static tf2_ros::StaticTransformBroadcaster static_broadcaster((rclcpp::Node*)node_ptr_);
     geometry_msgs::msg::TransformStamped transformStamped;
     transformStamped.header.stamp = rclcpp::Clock().now();
@@ -113,6 +113,7 @@ class GenericSensor {
     setStaticTransform(frame_id, parent_frame_id, x, y, z, q.x(), q.y(), q.z(), q.w());
   };
 
+  private:
   void registerSensor(){};
 
 };  // class GenericSensor
